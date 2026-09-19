@@ -84,6 +84,10 @@ const Reader = (() => {
     const bookmarks = App.getBookmarks();
     const canWrite = currentLesson.canWrite;
 
+    // 문장별 상세 패널은 DOM에 새로 만들어 붙이는 방식이라 전체 다시 그리기 시 함께 사라진다.
+    // 선택 상태만 남아 있으면 같은 문장을 다시 클릭했을 때 접힘으로 오인해 아무 반응이 없으므로 여기서 같이 초기화한다.
+    selectedSentenceId = null;
+
     const sentencesHTML = currentLesson.sentences.map(s => {
       const isBookmarked = bookmarks.sentences.includes(s.id);
       return `
@@ -199,12 +203,14 @@ const Reader = (() => {
     const block = document.querySelector(`.sentence-block[data-sentence-id="${sentenceId}"]`);
     if (!block) return;
 
+    // 拼音/번역 보기가 이미 켜져 있으면 문장 블록에 그대로 보이므로, 상세 패널에서는 중복 표시하지 않는다.
+    const toggles = App.getDisplayToggles();
     const isSaved = App.isBookmarked('sentences', sentenceId);
     const detail = document.createElement('div');
     detail.className = 'sentence-detail show';
     detail.innerHTML = `
-      <p class="sd-pinyin">${sentence.pinyin}</p>
-      <p class="sd-kr">${sentence.translation}</p>
+      ${toggles.pinyin ? '' : `<p class="sd-pinyin">${sentence.pinyin}</p>`}
+      ${toggles.translation ? '' : `<p class="sd-kr">${sentence.translation}</p>`}
       <div class="sd-actions">
         <button class="action-chip" id="btn-speak-sentence">${App.ICONS.volume} 문장 듣기</button>
         <button class="action-chip ${isSaved ? 'saved' : ''}" id="btn-save-sentence">
