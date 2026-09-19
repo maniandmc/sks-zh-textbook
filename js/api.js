@@ -62,6 +62,7 @@ const Api = (() => {
     teacher: {
       listStudents: () => get('/api/teacher/students'),
       createStudent: (data) => post('/api/teacher/students', data),
+      resetStudentPassword: (studentId, newPassword) => post(`/api/teacher/students/${studentId}/reset-password`, { newPassword }),
     },
 
     classes: {

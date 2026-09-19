@@ -1,8 +1,8 @@
-// functions/api/teacher/students.js
+// functions/api/teacher/students/index.js
 // GET  /api/teacher/students  → 이 교사가 만든 학생 계정 목록
 // POST /api/teacher/students  { username, password, displayName } → 학생 계정 생성
 
-import { requireTeacher, hashPassword, jsonResponse, errorResponse } from '../../_lib/auth.js';
+import { requireTeacher, hashPassword, jsonResponse, errorResponse } from '../../../_lib/auth.js';
 
 export async function onRequestGet(context) {
   const authResult = await requireTeacher(context);

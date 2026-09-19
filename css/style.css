@@ -1767,6 +1767,12 @@ body.edit-mode-on .inline-add-btn { display: inline-flex; }
 .class-roster.show { display: block; }
 .class-roster .admin-list { margin-bottom: 0; }
 
+.admin-inline-form {
+  display: none;
+  margin: -4px 0 8px;
+}
+.admin-inline-form.show { display: block; }
+
 @media (max-width: 480px) {
   .admin-lesson-header-row { flex-direction: column; align-items: flex-start; }
 }

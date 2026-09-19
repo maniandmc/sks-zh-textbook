@@ -162,6 +162,12 @@ const Classes = (() => {
     container.querySelectorAll('[data-action="toggle-roster"]').forEach(btn => {
       btn.addEventListener('click', () => toggleRoster(btn, Number(btn.dataset.classId)));
     });
+
+    container.querySelectorAll('[data-action="reset-password"]').forEach(btn => {
+      const studentId = Number(btn.dataset.studentId);
+      const student = students.find(s => s.id === studentId);
+      if (student) btn.addEventListener('click', () => toggleResetPasswordForm(student));
+    });
   }
 
   function renderTeacherClassCard(c) {
@@ -188,7 +194,11 @@ const Classes = (() => {
         <div class="admin-row-main">
           <p class="admin-row-zh">${App.escapeHTML(s.display_name)} <span class="admin-row-sub" style="display:inline;">@${App.escapeHTML(s.username)}</span></p>
         </div>
+        <div class="admin-row-actions">
+          <button class="icon-text-btn" data-action="reset-password" data-student-id="${s.id}">비밀번호 재설정</button>
+        </div>
       </div>
+      <div class="admin-inline-form" id="reset-pw-form-${s.id}"></div>
     `;
   }
 
@@ -258,6 +268,55 @@ const Classes = (() => {
     } catch (e) {
       rosterEl.innerHTML = `<p class="admin-empty-row">${App.escapeHTML(e.message)}</p>`;
     }
+  }
+
+  function toggleResetPasswordForm(student) {
+    const formEl = document.getElementById(`reset-pw-form-${student.id}`);
+    if (!formEl) return;
+
+    if (formEl.classList.contains('show')) {
+      formEl.classList.remove('show');
+      formEl.innerHTML = '';
+      return;
+    }
+
+    formEl.classList.add('show');
+    formEl.innerHTML = `
+      <div class="inline-form-row">
+        <input type="password" id="reset-pw-input-${student.id}" placeholder="새 비밀번호 (4자 이상)">
+        <button class="btn-primary" id="reset-pw-save-${student.id}">재설정</button>
+        <button class="btn-secondary" id="reset-pw-cancel-${student.id}">취소</button>
+      </div>
+    `;
+
+    const input = formEl.querySelector(`#reset-pw-input-${student.id}`);
+    input.focus();
+
+    const close = () => {
+      formEl.classList.remove('show');
+      formEl.innerHTML = '';
+    };
+
+    formEl.querySelector(`#reset-pw-cancel-${student.id}`).addEventListener('click', close);
+
+    const submit = async () => {
+      const newPassword = input.value;
+      if (newPassword.length < 4) {
+        App.showToast('비밀번호는 4자 이상이어야 합니다');
+        return;
+      }
+      try {
+        await Api.teacher.resetStudentPassword(student.id, newPassword);
+        App.showToast(`"${student.display_name}" 학생의 비밀번호를 재설정했습니다`);
+      } catch (e) {
+        App.showToast(e.message);
+        return;
+      }
+      close();
+    };
+
+    formEl.querySelector(`#reset-pw-save-${student.id}`).addEventListener('click', submit);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
   }
 
   /* ---------------- 공통 ---------------- */
