@@ -19,7 +19,7 @@ const App = (() => {
     bookmarksCache: null,   // { sentences: [...], words: [...] }
     currentLessonId: null,
     currentView: 'home',    // home | reader | vocabulary | bookmarks | admin
-    currentTab: 'text',     // text | vocab | grammar | quiz (reader 내부)
+    currentTab: 'text',     // text | raw | vocab | grammar | quiz (reader 내부)
   };
 
   const STORAGE_KEYS = {
@@ -606,6 +606,7 @@ const App = (() => {
         <p class="panel-title">단원 메뉴</p>
         <div class="lesson-menu-list">
           <button class="lesson-menu-item ${state.currentTab === 'text' ? 'active' : ''}" onclick="App.navigate('reader', {lessonId:${lesson.id}, tab:'text'})">본문</button>
+          <button class="lesson-menu-item ${state.currentTab === 'raw' ? 'active' : ''}" onclick="App.navigate('reader', {lessonId:${lesson.id}, tab:'raw'})">원문</button>
           <button class="lesson-menu-item ${state.currentTab === 'vocab' ? 'active' : ''}" onclick="App.navigate('reader', {lessonId:${lesson.id}, tab:'vocab'})">단어</button>
           <button class="lesson-menu-item ${state.currentTab === 'grammar' ? 'active' : ''}" onclick="App.navigate('reader', {lessonId:${lesson.id}, tab:'grammar'})">문법</button>
           <button class="lesson-menu-item ${state.currentTab === 'quiz' ? 'active' : ''}" onclick="App.navigate('reader', {lessonId:${lesson.id}, tab:'quiz'})">연습문제</button>

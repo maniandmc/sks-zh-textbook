@@ -784,6 +784,18 @@ input {
 }
 .sb-translation.show { display: block; }
 
+/* 원문 탭: 拼音·번역·편집 컨트롤 없이 본문만 이어서 보여준다 */
+.raw-passage {
+  font-family: var(--font-zh);
+  font-size: 22px;
+  line-height: 2.2;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-m);
+  padding: 24px 26px;
+}
+
 /* 문장 상세 패널: 클릭한 문장 블록 안에 바로 펼쳐진다 */
 .sentence-detail {
   margin-top: 10px;
@@ -1333,6 +1345,7 @@ input {
   }
 
   .sb-chinese { font-size: 20px; line-height: 1.85; }
+  .raw-passage { font-size: 20px; line-height: 2; padding: 18px 18px; }
 
   .reader-header h2 { font-size: 22px; }
 

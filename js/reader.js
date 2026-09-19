@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   reader.js — 교재 화면: 본문 / 단어 / 문법 / 연습문제 탭
+   reader.js — 교재 화면: 본문 / 원문 / 단어 / 문법 / 연습문제 탭
    ============================================================ */
 
 const Reader = (() => {
@@ -30,12 +30,14 @@ const Reader = (() => {
 
         <div class="tab-row">
           <button class="tab-btn ${tab === 'text' ? 'active' : ''}" data-tab="text">본문</button>
+          <button class="tab-btn ${tab === 'raw' ? 'active' : ''}" data-tab="raw">원문</button>
           <button class="tab-btn ${tab === 'vocab' ? 'active' : ''}" data-tab="vocab">단어</button>
           <button class="tab-btn ${tab === 'grammar' ? 'active' : ''}" data-tab="grammar">문법</button>
           <button class="tab-btn ${tab === 'quiz' ? 'active' : ''}" data-tab="quiz">연습문제</button>
         </div>
 
         <div class="tab-panel ${tab === 'text' ? 'active' : ''}" id="tab-text"></div>
+        <div class="tab-panel ${tab === 'raw' ? 'active' : ''}" id="tab-raw"></div>
         <div class="tab-panel ${tab === 'vocab' ? 'active' : ''}" id="tab-vocab"></div>
         <div class="tab-panel ${tab === 'grammar' ? 'active' : ''}" id="tab-grammar"></div>
         <div class="tab-panel ${tab === 'quiz' ? 'active' : ''}" id="tab-quiz"></div>
@@ -60,6 +62,7 @@ const Reader = (() => {
 
   function renderTabContent(tab) {
     if (tab === 'text') renderTextTab();
+    else if (tab === 'raw') renderRawTab();
     else if (tab === 'vocab') Vocabulary.renderLessonVocab(document.getElementById('tab-vocab'), currentLesson);
     else if (tab === 'grammar') renderGrammarTab();
     else if (tab === 'quiz') renderQuizTab();
@@ -236,6 +239,19 @@ const Reader = (() => {
     if (typeof detail.scrollIntoView === 'function') {
       detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
+  }
+
+  /* ================= 원문 탭: 拼音·번역·편집 없이 원문만 이어서 보여준다 ================= */
+
+  function renderRawTab() {
+    const el = document.getElementById('tab-raw');
+    const fullText = currentLesson.sentences.map(s => s.chinese).join('');
+    el.innerHTML = `<div class="raw-passage zh">${fullText}</div>`;
+
+    // 원문도 본문과 같은 내용을 보여주는 것이므로 '본문 읽음' 진행률을 함께 표시한다.
+    App.setLessonProgressField(currentLesson.id, 'text', true);
+    App.renderInfoPanel(currentLesson);
+    App.renderSidebarLessonList();
   }
 
   /* ================= 문법 탭 ================= */
