@@ -1,0 +1,16 @@
+{
+  "name": "chinese-textbook",
+  "private": true,
+  "version": "0.2.0",
+  "description": "중국어 온라인 교재 - Cloudflare Pages + Pages Functions + D1",
+  "scripts": {
+    "dev": "wrangler pages dev .",
+    "deploy": "wrangler pages deploy .",
+    "db:migrate:local": "wrangler d1 execute chinese-textbook-db --local --file=migrations/0001_init.sql && wrangler d1 execute chinese-textbook-db --local --file=migrations/0002_lessons.sql",
+    "db:migrate:remote": "wrangler d1 execute chinese-textbook-db --remote --file=migrations/0001_init.sql && wrangler d1 execute chinese-textbook-db --remote --file=migrations/0002_lessons.sql",
+    "hash-password": "node scripts/hash-password.js"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

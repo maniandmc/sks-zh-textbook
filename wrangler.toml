@@ -1,0 +1,13 @@
+# wrangler.toml
+#
+# Cloudflare Pages 프로젝트 설정. 로컬 개발(`wrangler pages dev`)과
+# 실제 배포 둘 다 이 파일의 D1 바인딩(`DB`)을 통해 같은 코드로 동작합니다.
+
+name = "chinese-textbook"
+compatibility_date = "2026-09-18"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "chinese-textbook-db"
+database_id = "9540e0f9-c9fa-4446-9c74-6c0696ac7cfa"

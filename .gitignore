@@ -1,0 +1,9 @@
+# Wrangler 로컬 개발 상태 (로컬 D1 SQLite 파일 등) — 커밋하지 않음
+.wrangler/
+
+# Node
+node_modules/
+package-lock.json
+
+# OS
+.DS_Store
