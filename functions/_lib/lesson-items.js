@@ -34,12 +34,21 @@ export const ITEM_TYPES = {
 
   vocabulary: {
     table: 'vocabulary',
-    required: ['word', 'pinyin', 'partOfSpeech', 'meaning'],
+    // 단어(word)만 필수. 나머지는 표 붙여넣기 일괄 추가에서 비어 있을 수 있음.
+    required: ['word'],
+    validate: (b) => {
+      if (b.word.trim().length > 100) return '단어는 100자 이내로 입력해주세요';
+      if ((b.pinyin || '').length > 200) return '병음은 200자 이내로 입력해주세요';
+      if ((b.partOfSpeech || '').length > 50) return '품사는 50자 이내로 입력해주세요';
+      if ((b.meaning || '').length > 500) return '뜻은 500자 이내로 입력해주세요';
+      if ((b.example || '').length > 1000) return '예문은 1000자 이내로 입력해주세요';
+      return null;
+    },
     toRow: (b) => ({
       word: b.word.trim(),
-      pinyin: b.pinyin.trim(),
-      part_of_speech: b.partOfSpeech.trim(),
-      meaning: b.meaning.trim(),
+      pinyin: (b.pinyin || '').trim(),
+      part_of_speech: (b.partOfSpeech || '').trim(),
+      meaning: (b.meaning || '').trim(),
       example: (b.example || '').trim(),
     }),
     selectColumns: 'id, word, pinyin, part_of_speech, meaning, example',
