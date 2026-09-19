@@ -224,7 +224,10 @@ const Admin = (() => {
 
     content.innerHTML = `
       <div class="admin-list">${rows || emptyRow('아직 등록된 문장이 없습니다')}</div>
-      <button class="btn-primary admin-add-btn" id="admin-add-sentence">+ 문장 추가</button>
+      <div class="admin-add-btn-row">
+        <button class="btn-primary admin-add-btn" id="admin-add-sentence">+ 문장 추가</button>
+        <button class="btn-secondary admin-add-btn" id="admin-bulk-add-sentence">+ 여러 문장 한번에 추가</button>
+      </div>
       <div id="admin-inline-form"></div>
     `;
 
@@ -246,6 +249,10 @@ const Admin = (() => {
 
     content.querySelector('#admin-add-sentence').addEventListener('click', () => {
       EditorForms.renderSentenceForm(content.querySelector('#admin-inline-form'), lesson.id, null, () => refreshAfterEdit('sentence'));
+    });
+
+    content.querySelector('#admin-bulk-add-sentence').addEventListener('click', () => {
+      EditorForms.renderBulkSentenceForm(content.querySelector('#admin-inline-form'), lesson.id, () => refreshAfterEdit('sentence'));
     });
   }
 

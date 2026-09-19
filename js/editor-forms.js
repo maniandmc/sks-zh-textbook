@@ -69,6 +69,75 @@ const EditorForms = (() => {
     safeScrollIntoView(hostEl);
   }
 
+  /* ---------------- 문장 일괄 추가 폼 ---------------- */
+
+  function splitLines(text) {
+    return text.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+  }
+
+  function renderBulkSentenceForm(hostEl, lessonId, onDone) {
+    hostEl.innerHTML = `
+      <div class="admin-card">
+        <p class="section-heading">문장 일괄 추가</p>
+        <p class="admin-row-sub" style="margin-bottom:14px;">중국어·병음·번역을 각각 줄바꿈으로 구분해서 붙여넣으세요. 세 칸의 줄 수가 서로 같아야 하며, 같은 줄 번호끼리 한 문장으로 묶입니다.</p>
+        <div class="admin-field">
+          <label>중국어 (한 줄에 한 문장)</label>
+          <textarea id="ef-bulk-chinese" class="zh" rows="6" placeholder="中国人非常重视家庭。&#10;家庭观念在中国文化中很重要。"></textarea>
+        </div>
+        <div class="admin-field">
+          <label>병음 (한 줄에 한 문장)</label>
+          <textarea id="ef-bulk-pinyin" rows="6" placeholder="Zhōngguórén fēicháng zhòngshì jiātíng.&#10;Jiātíng guānniàn zài Zhōngguó wénhuà zhōng hěn zhòngyào."></textarea>
+        </div>
+        <div class="admin-field">
+          <label>한국어 번역 (한 줄에 한 문장)</label>
+          <textarea id="ef-bulk-translation" rows="6" placeholder="중국인은 가족을 매우 중요하게 생각한다.&#10;가족관념은 중국 문화에서 매우 중요하다."></textarea>
+        </div>
+        <div class="admin-form-actions">
+          <button class="btn-primary" id="ef-bulk-save">일괄 추가</button>
+          <button class="btn-secondary" id="ef-bulk-cancel">취소</button>
+        </div>
+      </div>
+    `;
+
+    hostEl.querySelector('#ef-bulk-cancel').addEventListener('click', () => { hostEl.innerHTML = ''; });
+    hostEl.querySelector('#ef-bulk-save').addEventListener('click', async () => {
+      const chineseLines = splitLines(hostEl.querySelector('#ef-bulk-chinese').value);
+      const pinyinLines = splitLines(hostEl.querySelector('#ef-bulk-pinyin').value);
+      const translationLines = splitLines(hostEl.querySelector('#ef-bulk-translation').value);
+
+      if (chineseLines.length === 0) {
+        App.showToast('중국어 문장을 입력해주세요');
+        return;
+      }
+      if (chineseLines.length !== pinyinLines.length || chineseLines.length !== translationLines.length) {
+        App.showToast(`줄 수가 서로 다릅니다 (중국어 ${chineseLines.length} / 병음 ${pinyinLines.length} / 번역 ${translationLines.length})`);
+        return;
+      }
+
+      const saveBtn = hostEl.querySelector('#ef-bulk-save');
+      saveBtn.disabled = true;
+      let successCount = 0;
+      for (let i = 0; i < chineseLines.length; i++) {
+        try {
+          await App.addSentence(lessonId, {
+            chinese: chineseLines[i],
+            pinyin: pinyinLines[i],
+            translation: translationLines[i],
+          });
+          successCount++;
+        } catch (e) {
+          // 개별 실패는 건너뛰고 계속 진행 (App 계층에서 이미 오류 토스트 표시됨)
+        }
+      }
+
+      hostEl.innerHTML = '';
+      App.showToast(`${successCount}/${chineseLines.length}개 문장을 추가했습니다`);
+      if (onDone) await onDone();
+    });
+
+    safeScrollIntoView(hostEl);
+  }
+
   /* ---------------- 단어 폼 ---------------- */
 
   function renderVocabForm(hostEl, lessonId, word, onDone) {
@@ -357,7 +426,7 @@ const EditorForms = (() => {
   }
 
   return {
-    renderSentenceForm, renderVocabForm, renderGrammarForm, renderQuizForm, renderLessonMetaForm,
+    renderSentenceForm, renderBulkSentenceForm, renderVocabForm, renderGrammarForm, renderQuizForm, renderLessonMetaForm,
     safeScrollIntoView,
   };
 })();
