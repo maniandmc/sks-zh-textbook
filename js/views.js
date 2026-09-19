@@ -13,8 +13,8 @@ const Views = (() => {
       container.innerHTML = `
         <div class="content-inner">
           <div class="home-hero">
-            <h1>중국어 온라인 교재</h1>
-            <p>오늘도 중국어를 한 걸음씩 공부해요.</p>
+            <h1>SKS <span class="zh">中文学习馆</span></h1>
+            <p>상해한국학교 중국어 온라인 교재 시스템</p>
           </div>
           <div class="empty-state">
             ${App.ICONS.book}
@@ -51,8 +51,8 @@ const Views = (() => {
     container.innerHTML = `
       <div class="content-inner">
         <div class="home-hero">
-          <h1>중국어 온라인 교재</h1>
-          <p>오늘도 중국어를 한 걸음씩 공부해요.</p>
+          <h1>SKS <span class="zh">中文学习馆</span></h1>
+          <p>상해한국학교 중국어 온라인 교재 시스템</p>
         </div>
 
         <div class="continue-card">
