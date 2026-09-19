@@ -935,55 +935,39 @@ input {
   font-size: 14px;
 }
 
-/* 단어 상세 모달(패널) */
+/* 단어 상세 패널: 클릭한 표 행/카드 바로 아래에 펼쳐진다 */
 .word-detail {
-  margin-top: 16px;
-  background: var(--color-surface);
+  background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-l);
-  padding: 20px 22px;
+  border-radius: var(--radius-m);
+  padding: 14px 16px;
   display: none;
 }
 .word-detail.show { display: block; }
-.word-detail .wd-word {
-  font-family: var(--font-zh);
-  font-size: 30px;
-  font-weight: 700;
-  margin: 0 0 2px;
-}
-.word-detail .wd-pinyin {
-  font-size: 15px;
-  color: var(--color-text-secondary);
-  margin: 0 0 10px;
-}
-.word-detail .wd-pos {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-accent);
-  background: var(--color-accent-soft);
-  border-radius: 10px;
-  padding: 3px 10px;
-  margin-bottom: 12px;
-}
-.word-detail .wd-meaning {
-  font-size: 16px;
-  margin: 0 0 16px;
-}
-.word-detail .wd-actions { display: flex; gap: 8px; margin-bottom: 16px; }
+.word-detail .wd-actions { display: flex; gap: 8px; }
 .word-detail .wd-example-label {
   font-size: 12px;
   font-weight: 700;
   color: var(--color-text-tertiary);
-  margin: 0 0 8px;
+  margin: 14px 0 8px;
 }
 .word-detail .wd-example {
   font-family: var(--font-zh);
   font-size: 16px;
   color: var(--color-text-secondary);
   padding: 12px 14px;
-  background: var(--color-bg);
+  background: var(--color-surface);
   border-radius: var(--radius-s);
+}
+
+.vocab-table tbody tr.selected { background: var(--color-accent-soft); }
+.vocab-table tbody tr.word-detail-row { cursor: default; }
+.vocab-table tbody tr.word-detail-row:hover { background: transparent; }
+.vocab-table tbody tr.word-detail-row td { padding: 10px 14px; }
+
+.vocab-card.selected {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent-soft-border);
 }
 
 /* ---- 문법 탭 ---- */

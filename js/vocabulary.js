@@ -7,6 +7,7 @@
 const Vocabulary = (() => {
 
   let currentLessonRef = null;
+  let selectedWordId = null;
 
   /* ================= 단원 내 단어 탭 ================= */
 
@@ -38,7 +39,6 @@ const Vocabulary = (() => {
         </div>
       ` : ''}
       <div id="vocab-edit-form-host"></div>
-      <div class="word-detail" id="lesson-word-detail"></div>
     `;
 
     renderVocabList(lesson.vocabulary);
@@ -89,6 +89,9 @@ const Vocabulary = (() => {
   function renderVocabList(list) {
     const tbody = document.querySelector('#lesson-vocab-table tbody');
     const cardsEl = document.getElementById('lesson-vocab-cards');
+
+    // 표/카드를 통째로 다시 그리면 펼쳐져 있던 상세 패널도 함께 사라지므로 선택 상태를 같이 초기화한다.
+    selectedWordId = null;
 
     if (list.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5" class="vocab-empty">검색 결과가 없습니다</td></tr>`;
@@ -216,36 +219,75 @@ const Vocabulary = (() => {
     const v = currentLessonRef.vocabulary.find(item => item.id === id);
     if (!v) return;
 
+    // 이전에 펼쳐져 있던 상세 패널은 표/카드 어디에 있든 제거한다.
+    document.querySelectorAll('.word-detail-row').forEach(row => row.remove());
+    document.querySelectorAll('.word-detail').forEach(d => d.remove());
+
+    if (selectedWordId === id) {
+      // 이미 펼쳐진 단어를 다시 클릭하면 접는다.
+      selectedWordId = null;
+      document.querySelectorAll('.vocab-table tr[data-id], .vocab-card').forEach(el => el.classList.remove('selected'));
+      return;
+    }
+    selectedWordId = id;
+
+    document.querySelectorAll('.vocab-table tr[data-id], .vocab-card').forEach(el => {
+      el.classList.toggle('selected', Number(el.dataset.id) === id);
+    });
+
     const isSaved = App.isBookmarked('words', v.id);
-    const detail = document.getElementById('lesson-word-detail');
-    detail.innerHTML = `
-      <p class="wd-word zh">${v.word}</p>
-      <p class="wd-pinyin">${v.pinyin}</p>
-      <span class="wd-pos">${v.partOfSpeech}</span>
-      <p class="wd-meaning">${v.meaning}</p>
+    const exampleHTML = v.example.trim()
+      ? `<p class="wd-example-label">예문</p><p class="wd-example zh">${v.example}</p>`
+      : '';
+    const detailHTML = `
       <div class="wd-actions">
         <button class="action-chip" id="btn-speak-word">${App.ICONS.volume} 발음</button>
         <button class="action-chip ${isSaved ? 'saved' : ''}" id="btn-save-word">
           ${isSaved ? App.ICONS.starFilled : App.ICONS.star} ${isSaved ? '저장됨' : '단어장에 저장'}
         </button>
       </div>
-      <p class="wd-example-label">예문</p>
-      <p class="wd-example zh">${v.example}</p>
+      ${exampleHTML}
     `;
-    detail.classList.add('show');
 
-    detail.querySelector('#btn-speak-word').addEventListener('click', () => App.speak(v.word));
-    detail.querySelector('#btn-save-word').addEventListener('click', async () => {
-      let nowSaved;
-      try {
-        nowSaved = await App.toggleBookmark('words', v.id);
-      } catch (err) { return; }
-      App.showToast(nowSaved ? '단어장에 저장했습니다' : '저장을 취소했습니다');
-      showWordDetail(id);
+    // 표 행 바로 아래에 상세 패널을 끼워 넣는다 (표는 <tr>만 자식으로 가질 수 있어 행을 하나 더 추가한다).
+    const row = document.querySelector(`.vocab-table tr[data-id="${id}"]`);
+    let detailInRow = null;
+    if (row) {
+      const detailRow = document.createElement('tr');
+      detailRow.className = 'word-detail-row';
+      const cellCount = row.children.length;
+      detailRow.innerHTML = `<td colspan="${cellCount}"><div class="word-detail show">${detailHTML}</div></td>`;
+      row.insertAdjacentElement('afterend', detailRow);
+      detailInRow = detailRow.querySelector('.word-detail');
+    }
+
+    // 카드 바로 아래에도 같은 상세 패널을 끼워 넣는다 (모바일 레이아웃에서는 이쪽이 보인다).
+    const card = document.querySelector(`.vocab-card[data-id="${id}"]`);
+    let detailInCard = null;
+    if (card) {
+      const detailDiv = document.createElement('div');
+      detailDiv.className = 'word-detail show';
+      detailDiv.innerHTML = detailHTML;
+      card.insertAdjacentElement('afterend', detailDiv);
+      detailInCard = detailDiv;
+    }
+
+    [detailInRow, detailInCard].filter(Boolean).forEach(detail => {
+      detail.querySelector('#btn-speak-word').addEventListener('click', () => App.speak(v.word));
+      detail.querySelector('#btn-save-word').addEventListener('click', async () => {
+        let nowSaved;
+        try {
+          nowSaved = await App.toggleBookmark('words', v.id);
+        } catch (err) { return; }
+        App.showToast(nowSaved ? '단어장에 저장했습니다' : '저장을 취소했습니다');
+        selectedWordId = null;
+        showWordDetail(id);
+      });
     });
 
-    if (typeof detail.scrollIntoView === 'function') {
-      detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    const visibleDetail = (card && card.offsetParent !== null) ? detailInCard : detailInRow;
+    if (visibleDetail && typeof visibleDetail.scrollIntoView === 'function') {
+      visibleDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }
 
