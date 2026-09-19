@@ -1697,6 +1697,15 @@ body.edit-mode-on .inline-edit-banner { display: flex; }
 body.edit-mode-on .inline-add-btn { display: inline-flex; }
 .inline-add-btn svg { width: 15px; height: 15px; }
 
+.inline-add-btn-row {
+  display: none;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+body.edit-mode-on .inline-add-btn-row { display: flex; }
+.inline-add-btn-row .inline-add-btn { margin-top: 0; }
+
 .vocab-card, .vocab-table tbody tr {
   position: relative;
 }

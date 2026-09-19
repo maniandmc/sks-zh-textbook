@@ -31,7 +31,12 @@ const Vocabulary = (() => {
         <tbody></tbody>
       </table>
       <div class="vocab-cards" id="lesson-vocab-cards"></div>
-      ${canWrite ? `<button class="btn-primary inline-add-btn" id="btn-add-vocab">${App.ICONS.plus} 단어 추가</button>` : ''}
+      ${canWrite ? `
+        <div class="inline-add-btn-row">
+          <button class="btn-primary inline-add-btn" id="btn-add-vocab">${App.ICONS.plus} 단어 추가</button>
+          <button class="btn-secondary inline-add-btn" id="btn-paste-import-vocab">${App.ICONS.plus} 표 붙여넣기로 일괄 추가</button>
+        </div>
+      ` : ''}
       <div id="vocab-edit-form-host"></div>
       <div class="word-detail" id="lesson-word-detail"></div>
     `;
@@ -53,6 +58,20 @@ const Vocabulary = (() => {
     if (addVocabBtn) {
       addVocabBtn.addEventListener('click', () => {
         EditorForms.renderVocabForm(document.getElementById('vocab-edit-form-host'), lesson.id, null, async () => {
+          App.invalidateCache();
+          const refreshed = await App.getLesson(lesson.id);
+          currentLessonRef = refreshed;
+          renderVocabList(refreshed.vocabulary);
+          App.renderInfoPanel(refreshed);
+        });
+      });
+    }
+
+    const pasteImportBtn = container.querySelector('#btn-paste-import-vocab');
+    if (pasteImportBtn) {
+      pasteImportBtn.addEventListener('click', () => {
+        const existingWords = currentLessonRef.vocabulary.map(v => v.word);
+        VocabPasteImport.open(lesson.id, existingWords, async () => {
           App.invalidateCache();
           const refreshed = await App.getLesson(lesson.id);
           currentLessonRef = refreshed;
