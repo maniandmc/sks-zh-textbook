@@ -111,7 +111,6 @@ const Reader = (() => {
       <div class="passage">${sentencesHTML}</div>
       ${canWrite ? `<button class="btn-primary inline-add-btn" id="btn-add-sentence">${App.ICONS.plus} 문장 추가</button>` : ''}
       <div id="sentence-edit-form-host"></div>
-      <div class="sentence-detail" id="sentence-detail"></div>
     `;
 
     el.querySelector('#toggle-pinyin').addEventListener('click', () => {
@@ -182,16 +181,28 @@ const Reader = (() => {
     const sentence = currentLesson.sentences.find(s => s.id === sentenceId);
     if (!sentence) return;
 
+    // 이전에 열려 있던 상세 패널은 어느 문장 블록에 있든 제거한다.
+    document.querySelectorAll('.sentence-detail').forEach(d => d.remove());
+
+    if (selectedSentenceId === sentenceId) {
+      // 이미 펼쳐진 문장을 다시 클릭하면 접는다.
+      selectedSentenceId = null;
+      document.querySelectorAll('.sentence-block').forEach(b => b.classList.remove('selected'));
+      return;
+    }
     selectedSentenceId = sentenceId;
 
     document.querySelectorAll('.sentence-block').forEach(b => {
       b.classList.toggle('selected', Number(b.dataset.sentenceId) === sentenceId);
     });
 
+    const block = document.querySelector(`.sentence-block[data-sentence-id="${sentenceId}"]`);
+    if (!block) return;
+
     const isSaved = App.isBookmarked('sentences', sentenceId);
-    const detail = document.getElementById('sentence-detail');
+    const detail = document.createElement('div');
+    detail.className = 'sentence-detail show';
     detail.innerHTML = `
-      <p class="sd-zh zh">${sentence.chinese}</p>
       <p class="sd-pinyin">${sentence.pinyin}</p>
       <p class="sd-kr">${sentence.translation}</p>
       <div class="sd-actions">
@@ -201,7 +212,8 @@ const Reader = (() => {
         </button>
       </div>
     `;
-    detail.classList.add('show');
+    detail.addEventListener('click', (e) => e.stopPropagation());
+    block.appendChild(detail);
 
     detail.querySelector('#btn-speak-sentence').addEventListener('click', () => App.speak(sentence.chinese));
     detail.querySelector('#btn-save-sentence').addEventListener('click', async () => {
@@ -211,7 +223,8 @@ const Reader = (() => {
       } catch (err) { return; }
       App.showToast(nowSaved ? '문장을 저장했습니다' : '저장을 취소했습니다');
       renderTextTab();
-      setTimeout(() => selectSentence(sentenceId), 0);
+      selectedSentenceId = null;
+      selectSentence(sentenceId);
     });
 
     if (typeof detail.scrollIntoView === 'function') {
