@@ -11,22 +11,22 @@
   function showLogin(message) {
     document.getElementById('login-screen').classList.add('show');
     document.getElementById('hsk-header').style.display = 'none';
+    document.getElementById('hsk-app-root').style.display = 'none';
+    document.getElementById('hsk-exam-nav').style.display = 'none';
     document.getElementById('hsk-toolbar').style.display = 'none';
     document.getElementById('exam-root').style.display = 'none';
     const errorEl = document.getElementById('login-error');
     if (errorEl) errorEl.textContent = message || '';
   }
 
-  function showExam(user) {
+  function showApp(user) {
     document.getElementById('login-screen').classList.remove('show');
     document.getElementById('hsk-header').style.display = '';
-    document.getElementById('hsk-toolbar').style.display = '';
-    document.getElementById('exam-root').style.display = '';
 
     const roleLabel = user.role === 'teacher' ? '교사' : '학생';
     document.getElementById('header-user-info').textContent = `${user.displayName} · ${roleLabel}`;
 
-    HskReading.render(document.getElementById('exam-root'), window.HSK_READING_DATA);
+    HskApp.start(user);
   }
 
   function wireLoginForm() {
@@ -46,7 +46,7 @@
       try {
         const user = await Api.auth.login(username, password);
         document.getElementById('login-password').value = '';
-        showExam(user);
+        showApp(user);
       } catch (err) {
         errorEl.textContent = err.message || '로그인에 실패했습니다';
       } finally {
@@ -87,7 +87,7 @@
     }
 
     if (me.user) {
-      showExam(me.user);
+      showApp(me.user);
     } else {
       showLogin();
     }

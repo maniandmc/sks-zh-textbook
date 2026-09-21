@@ -72,6 +72,20 @@ const Api = (() => {
       students: (classId) => get(`/api/classes/${classId}/students`),
     },
 
+    hskUnits: {
+      list: (classId) => get(`/api/hsk-units?classId=${classId}`),
+      get: (unitId) => get(`/api/hsk-units/${unitId}`),
+      create: (classId, title) => post('/api/hsk-units', { classId, title }),
+      update: (unitId, title) => put(`/api/hsk-units/${unitId}`, { title }),
+      remove: (unitId) => del(`/api/hsk-units/${unitId}`),
+      createGroup: (unitId, data) => post(`/api/hsk-units/${unitId}/groups`, data),
+      updateGroup: (unitId, groupId, data) => put(`/api/hsk-units/${unitId}/groups/${groupId}`, data),
+      removeGroup: (unitId, groupId) => del(`/api/hsk-units/${unitId}/groups/${groupId}`),
+      createQuestion: (unitId, groupId, data) => post(`/api/hsk-units/${unitId}/groups/${groupId}/questions`, data),
+      updateQuestion: (unitId, groupId, questionId, data) => put(`/api/hsk-units/${unitId}/groups/${groupId}/questions/${questionId}`, data),
+      removeQuestion: (unitId, groupId, questionId) => del(`/api/hsk-units/${unitId}/groups/${groupId}/questions/${questionId}`),
+    },
+
     lessons: {
       list: (params) => {
         const qs = params ? `?${new URLSearchParams(params).toString()}` : '';

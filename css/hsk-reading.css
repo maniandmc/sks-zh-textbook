@@ -22,6 +22,47 @@
 
 * { box-sizing: border-box; }
 
+/* -------------------- 클래스/단원 탐색 화면 (앱과 같은 산세리프) -------------------- */
+
+#hsk-app-root {
+  min-height: 100vh;
+  padding: 28px 24px 60px;
+}
+
+.hsk-clickable-row { cursor: pointer; }
+
+.hsk-part-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 24px 0 10px;
+}
+.hsk-part-section-title:first-child { margin-top: 0; }
+
+/* -------------------- 시험지 위 뒤로가기/편집 바 -------------------- */
+
+.hsk-exam-nav {
+  width: var(--page-w);
+  max-width: 100%;
+  margin: 20px auto -6px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.hsk-exam-nav-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.hsk-exam-empty {
+  text-align: center;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--ink-soft);
+  padding: 60px 0;
+}
+
 /* -------------------- 화면 미리보기용 툴바 (인쇄 시 숨김) -------------------- */
 
 .hsk-toolbar {
@@ -245,4 +286,5 @@ strong { font-weight: 700; }
   }
   .page-number { position: static; margin-top: 24px; }
   .passage-image { width: 34vw; }
+  .hsk-exam-nav { width: 100%; padding: 0 16px; }
 }
