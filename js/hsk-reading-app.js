@@ -13,7 +13,13 @@ const HskApp = (() => {
   let currentClass = null;
   let currentUnitId = null;
 
-  const PART_LABELS = { 1: '제1부분 (빈칸 채우기)', 2: '제2부분 (일치 고르기)', 3: '제3부분 (장문 독해)' };
+  // HSK 2.0 5급 독해의 고정 구성: 단어 빈칸 고르기 → 내용일치 → 독해.
+  const PART_LABELS = { 1: '단어 빈칸 고르기', 2: '내용일치', 3: '독해' };
+  const PART_RANGE_HINTS = {
+    1: '예: 46-48 (46~60번, 지문 하나에 문제 3개씩)',
+    2: '예: 61 (61~70번, 지문 하나에 문제 1개)',
+    3: '예: 71-74 (71~90번, 지문 하나에 문제 4개)',
+  };
 
   function appRoot() { return document.getElementById('hsk-app-root'); }
   function examNav() { return document.getElementById('hsk-exam-nav'); }
@@ -302,39 +308,51 @@ const HskApp = (() => {
       return;
     }
 
-    const groupsHTML = unit.parts.length === 0
-      ? '<p class="vocab-empty">아직 등록된 그룹이 없습니다</p>'
-      : unit.parts.map(p => renderPartSection(p)).join('');
+    // HSK 5급 독해는 항상 이 3부분으로 구성되므로, 아직 그룹이 없어도 3개 섹션을 고정으로 보여준다.
+    const partsByNumber = new Map(unit.parts.map(p => [p.part, p]));
+    const sectionsHTML = [1, 2, 3]
+      .map(partNum => partsByNumber.get(partNum) || { part: partNum, groups: [] })
+      .map(renderPartSection)
+      .join('');
 
     root.innerHTML = `
       <div class="content-inner">
         <button class="icon-text-btn" id="btn-back-to-view">← 미리보기로</button>
         <div class="page-header">
           <h1>${escapeHTML(unit.title)} 편집</h1>
-          <p>부분(1~3)을 골라 지문 그룹과 문제를 추가·수정·삭제하세요.</p>
+          <p>HSK 5급 독해는 <strong>단어 빈칸 고르기 → 내용일치 → 독해</strong> 세 부분으로 고정되어 있습니다. 각 부분 아래에서 지문 그룹과 문제를 추가하세요.</p>
         </div>
-        <div id="groups-container">${groupsHTML}</div>
-        <div class="admin-add-btn-row">
-          <button class="btn-primary admin-add-btn" id="btn-add-group">+ 그룹 추가</button>
-        </div>
-        <div id="group-form-host"></div>
+        <div id="groups-container">${sectionsHTML}</div>
       </div>
     `;
 
     root.querySelector('#btn-back-to-view').addEventListener('click', () => showUnitView(unitId));
     wireGroupAndQuestionActions(root, unit);
-
-    root.querySelector('#btn-add-group').addEventListener('click', () => {
-      renderGroupForm(root.querySelector('#group-form-host'), unitId, null);
-    });
+    wireAddGroupButtons(root, unitId);
   }
 
   function renderPartSection(partData) {
     const groupsHTML = partData.groups.map(g => renderGroupCard(g, partData.part)).join('');
+    const label = PART_LABELS[partData.part];
     return `
-      <h2 class="hsk-part-section-title">${escapeHTML(PART_LABELS[partData.part])}</h2>
-      ${groupsHTML}
+      <div class="hsk-part-section">
+        <h2 class="hsk-part-section-title">제${partData.part}부분 — ${escapeHTML(label)}</h2>
+        ${groupsHTML || '<p class="vocab-empty">아직 등록된 그룹이 없습니다</p>'}
+        <div class="admin-add-btn-row">
+          <button class="icon-text-btn" data-add-group-part="${partData.part}">+ ${escapeHTML(label)}에 그룹 추가</button>
+        </div>
+        <div id="group-form-host-part-${partData.part}"></div>
+      </div>
     `;
+  }
+
+  function wireAddGroupButtons(root, unitId) {
+    root.querySelectorAll('[data-add-group-part]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const part = Number(btn.dataset.addGroupPart);
+        renderGroupForm(document.getElementById(`group-form-host-part-${part}`), unitId, null, part);
+      });
+    });
   }
 
   function renderGroupCard(group, part) {
@@ -435,30 +453,26 @@ const HskApp = (() => {
     return null;
   }
 
-  function renderGroupForm(host, unitId, group, defaultPart) {
+  function renderGroupForm(host, unitId, group, fixedPart) {
     const isEdit = !!group;
+    const part = fixedPart;
     host.innerHTML = `
       <div class="admin-card">
+        <p class="admin-row-sub">부분: <strong>제${part}부분 — ${escapeHTML(PART_LABELS[part])}</strong></p>
         <div class="admin-field">
-          <label>부분</label>
-          <select id="group-part-input" ${isEdit ? 'disabled' : ''}>
-            <option value="1" ${(group ? group.part : defaultPart) === 1 || defaultPart === 1 ? 'selected' : ''}>제1부분 (빈칸 채우기)</option>
-            <option value="2" ${(group ? group.part : defaultPart) === 2 || defaultPart === 2 ? 'selected' : ''}>제2부분 (일치 고르기)</option>
-            <option value="3" ${(group ? group.part : defaultPart) === 3 || defaultPart === 3 ? 'selected' : ''}>제3부분 (장문 독해)</option>
-          </select>
-        </div>
-        <div class="admin-field">
-          <label for="group-range-input">문제 번호 (예: 46-48, 61, 71-74)</label>
+          <label for="group-range-input">문제 번호 (${escapeHTML(PART_RANGE_HINTS[part])})</label>
           <input type="text" id="group-range-input" value="${group ? escapeHTML(group.range) : ''}">
         </div>
         <div class="admin-field">
           <label for="group-passage-input">지문 (빈칸은 {46} 처럼 중괄호로 표시)</label>
           <textarea id="group-passage-input" rows="5">${group ? escapeHTML(group.passage) : ''}</textarea>
         </div>
-        <div class="admin-field">
-          <label for="group-image-input">삽화 이미지 URL (제3부분, 선택)</label>
-          <input type="text" id="group-image-input" value="${group && group.image ? escapeHTML(group.image) : ''}">
-        </div>
+        ${part === 3 ? `
+          <div class="admin-field">
+            <label for="group-image-input">삽화 이미지 URL (선택)</label>
+            <input type="text" id="group-image-input" value="${group && group.image ? escapeHTML(group.image) : ''}">
+          </div>
+        ` : ''}
         <p class="login-error" id="group-form-error"></p>
         <div class="admin-form-actions">
           <button class="btn-primary" id="group-form-save">${isEdit ? '저장' : '추가'}</button>
@@ -469,11 +483,12 @@ const HskApp = (() => {
     host.querySelector('#group-form-cancel').addEventListener('click', () => showUnitEdit(unitId));
     host.querySelector('#group-form-save').addEventListener('click', async () => {
       const errorEl = host.querySelector('#group-form-error');
+      const imageInput = host.querySelector('#group-image-input');
       const data = {
-        part: Number(host.querySelector('#group-part-input').value),
+        part,
         range: host.querySelector('#group-range-input').value.trim(),
         passage: host.querySelector('#group-passage-input').value.trim(),
-        image: host.querySelector('#group-image-input').value.trim(),
+        image: imageInput ? imageInput.value.trim() : '',
       };
       try {
         if (isEdit) {

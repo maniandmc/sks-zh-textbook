@@ -169,6 +169,7 @@ export async function serializeUnitFull(db, unit) {
     if (!groupsByPart.has(g.part)) groupsByPart.set(g.part, []);
     groupsByPart.get(g.part).push({
       id: g.id,
+      part: g.part,
       range: g.range,
       passage: g.passage,
       image: g.image_url || undefined,

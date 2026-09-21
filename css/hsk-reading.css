@@ -31,12 +31,12 @@
 
 .hsk-clickable-row { cursor: pointer; }
 
+.hsk-part-section + .hsk-part-section { margin-top: 28px; }
 .hsk-part-section-title {
   font-size: 15px;
   font-weight: 700;
-  margin: 24px 0 10px;
+  margin: 0 0 10px;
 }
-.hsk-part-section-title:first-child { margin-top: 0; }
 
 /* -------------------- 시험지 위 뒤로가기/편집 바 -------------------- */
 
