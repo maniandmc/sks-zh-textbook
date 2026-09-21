@@ -65,6 +65,27 @@
     });
   }
 
+  // textbook.html과 같은 localStorage 키(ctb_theme_v1)를 써서 테마가 두 화면에서 같이 유지된다.
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    try { localStorage.setItem('ctb_theme_v1', JSON.stringify(theme)); } catch (e) { /* 무시 */ }
+    const btn = document.getElementById('hsk-theme-btn');
+    if (btn) btn.textContent = theme === 'dark' ? '라이트 모드' : '다크 모드';
+  }
+
+  function wireThemeButton() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    applyTheme(isDark ? 'dark' : 'light'); // 버튼 라벨을 현재 테마에 맞춰 초기화
+    document.getElementById('hsk-theme-btn').addEventListener('click', () => {
+      const nowDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      applyTheme(nowDark ? 'light' : 'dark');
+    });
+  }
+
   function wireLogoutButton() {
     document.getElementById('hsk-logout-btn').addEventListener('click', async () => {
       if (!confirm('로그아웃하시겠습니까?')) return;
@@ -77,6 +98,7 @@
     wireLoginForm();
     wirePrintButton();
     wireHomeButton();
+    wireThemeButton();
     wireLogoutButton();
 
     let me;

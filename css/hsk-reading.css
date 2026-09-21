@@ -1,7 +1,10 @@
 /* ============================================================
    hsk-reading.css — HSK 5급 독해 A4 시험지 레이아웃
-   실제 인쇄물과 같은 느낌을 내야 하므로 앱의 테마(다크모드/포인트
-   컬러)는 가져오지 않고, 이 페이지 전용의 흑백 인쇄 톤을 사용한다.
+   실제 인쇄물과 같은 느낌을 내야 하므로, "종이"(--paper/--ink)는
+   다크모드에서도 항상 흰 바탕에 검은 글씨로 고정한다 — 진짜 인쇄물이
+   테마에 따라 바뀌지 않는 것과 같다. 다크모드는 종이 "밖"(배경, 헤더)
+   에만 적용되며, 그 배경색은 css/style.css의 --color-* 다크 테마
+   토큰을 그대로 따른다.
 
    로그인 화면은 css/style.css의 것을 그대로 재사용하므로, 종이
    배경/명조체는 body가 아니라 #exam-root 안에만 적용한다 — 그래야
@@ -15,6 +18,7 @@
   --ink-soft: #4a4a4a;
   --paper: #ffffff;
   --paper-backdrop: #E5E3DE;
+  --callout-bg: #f0efec; /* 종이 위 해설 상자 배경 — 테마와 무관하게 항상 이 색 */
   --rule: #1a1a1a;
   --page-w: 210mm;
   --page-h: 297mm;
@@ -22,6 +26,11 @@
   --correct-soft: #e4f2e8;
   --wrong: #b0392e;
   --wrong-soft: #fbeae8;
+}
+
+/* 종이 자체(--paper/--ink)는 그대로 두고, 종이 밖 배경만 어둡게 한다. */
+:root[data-theme="dark"] {
+  --paper-backdrop: #17171a;
 }
 
 * { box-sizing: border-box; }
@@ -222,7 +231,7 @@ strong { font-weight: 700; }
   display: none;
   margin-top: 6px;
   padding: 8px 10px;
-  background: var(--paper-backdrop);
+  background: var(--callout-bg);
   border-radius: 4px;
   font-size: 13px;
   color: var(--ink-soft);

@@ -6,6 +6,13 @@
 <title>HSK 5급 독해</title>
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/hsk-reading.css">
+<script>
+  // 앱에서 저장한 테마 설정을 그대로 이어받는다 (깜빡임 방지를 위해 렌더 전에 실행).
+  try {
+    const saved = JSON.parse(localStorage.getItem('ctb_theme_v1') || '"light"');
+    if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  } catch (e) { /* localStorage 접근 불가 시 기본 라이트 테마 유지 */ }
+</script>
 </head>
 <body>
 
@@ -43,6 +50,7 @@
     <div class="header-right">
       <span class="header-user-info" id="header-user-info"></span>
       <button class="icon-text-btn" id="hsk-home-btn">홈</button>
+      <button class="icon-text-btn" id="hsk-theme-btn">다크 모드</button>
       <button class="icon-text-btn" id="hsk-logout-btn">로그아웃</button>
     </div>
   </header>

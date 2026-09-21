@@ -48,6 +48,7 @@
           <input type="text" id="header-search-input" placeholder="단어 검색" readonly>
         </div>
         <span class="header-user-info" id="header-user-info"></span>
+        <button class="icon-btn" id="home-btn" aria-label="홈 화면으로" title="홈 화면으로"></button>
         <button class="icon-btn" id="edit-mode-toggle-btn" aria-label="편집 모드 켜기"></button>
         <button class="icon-btn" id="theme-toggle-btn" aria-label="테마 전환"></button>
         <button class="icon-btn" id="logout-btn" aria-label="로그아웃" title="로그아웃"></button>
@@ -115,6 +116,8 @@
     // 아이콘 주입 (App.ICONS 로드 이후 실행되어야 하므로 DOMContentLoaded에서 처리)
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('hamburger-btn').innerHTML = App.ICONS.menu;
+      document.getElementById('home-btn').innerHTML = App.ICONS.home;
+      document.getElementById('home-btn').addEventListener('click', () => { location.href = 'index.html'; });
       document.getElementById('theme-toggle-btn').innerHTML = App.ICONS.moon;
       document.getElementById('edit-mode-toggle-btn').innerHTML = App.ICONS.edit;
       document.getElementById('logout-btn').innerHTML = App.ICONS.logout;
