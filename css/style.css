@@ -1795,6 +1795,95 @@ body.edit-mode-on .inline-add-btn-row { display: flex; }
 }
 
 /* ============================================================
+   랜딩 화면 (index.html): 중국어 교재 / HSK 독해 선택
+   ============================================================ */
+
+.landing-body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.landing-inner {
+  width: 100%;
+  max-width: 640px;
+  text-align: center;
+}
+
+.landing-brand-mark {
+  width: 48px;
+  height: 48px;
+  font-size: 21px;
+  margin: 0 auto 16px;
+}
+
+.landing-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+.landing-sub {
+  font-size: 13.5px;
+  color: var(--color-text-secondary);
+  margin: 0 0 36px;
+}
+
+.landing-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.landing-card {
+  display: block;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-card);
+  padding: 32px 20px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+.landing-card:hover {
+  border-color: var(--color-accent-soft-border);
+  transform: translateY(-2px);
+}
+
+.landing-card-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: var(--radius-m);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.landing-card-icon.zh { font-family: var(--font-zh); font-size: 24px; }
+
+.landing-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+.landing-card-desc {
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .landing-cards { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
    로그인 화면
    ============================================================ */
 

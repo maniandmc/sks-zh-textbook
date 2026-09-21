@@ -12,8 +12,9 @@ HTML5 · CSS3 · Vanilla JavaScript 프론트엔드 + Cloudflare Pages Functions
 ## 실행 방법 (로컬 개발)
 
 이 앱은 정적 파일이 아니라 Cloudflare Pages Functions(백엔드 API) + D1(DB)이 있어야
-로그인 화면 이후로 넘어갈 수 있습니다. `index.html`을 그냥 더블클릭해서 여는 방식은
-동작하지 않습니다.
+로그인 화면 이후로 넘어갈 수 있습니다. `textbook.html`을 그냥 더블클릭해서 여는 방식은
+동작하지 않습니다. (`index.html`은 로그인이 필요 없는 랜딩 화면이라 더블클릭으로 열려도
+됩니다 — 아래 폴더 구조 참고.)
 
 ```bash
 npm install                        # wrangler 설치
@@ -35,8 +36,12 @@ npm run dev                        # wrangler pages dev . 실행, http://localho
 
 ```
 chinese-textbook/
-├── index.html               앱 셸(헤더/사이드바/본문/정보패널) + 로그인 화면
-├── css/style.css            전체 스타일 (라이트/다크 테마, 반응형)
+├── index.html               랜딩 화면(중국어 교재/HSK 독해 선택) — 로그인 불필요, 정적 페이지
+├── textbook.html            앱 셸(헤더/사이드바/본문/정보패널) + 로그인 화면 (실제 교재 앱)
+├── hsk-reading.html         HSK 5급 독해 레이아웃 프로토타입 (로그인 불필요, 정적 페이지)
+├── css/
+│   ├── style.css              교재 앱 전체 스타일 (라이트/다크 테마, 반응형) + 랜딩 화면
+│   └── hsk-reading.css        HSK 독해 페이지 전용 스타일 (인쇄 CSS 포함)
 ├── js/
 │   ├── api.js                fetch 래퍼 (인증/클래스/교재/진도율/북마크 API 호출)
 │   ├── app.js                 로그인·세션, 데이터 계층, 라우팅, 테마, 편집 모드, 진행률, 북마크, 전역 검색
@@ -45,7 +50,11 @@ chinese-textbook/
 │   ├── reader.js                교재 화면: 본문 / 문법 / 연습문제 탭 (+ 인라인 편집)
 │   ├── vocabulary.js            단어 탭(표·카드), 단어 상세, 전체 단어장 (+ 인라인 편집)
 │   ├── admin.js                 교재 관리 화면(교사 전용): 단원 CRUD, 상세 편집, JSON 내보내기
-│   └── classes.js               클래스 화면: 학생은 참여 코드로 가입, 교사는 클래스 생성·명단·학생 계정 발급
+│   ├── classes.js               클래스 화면: 학생은 참여 코드로 가입, 교사는 클래스 생성·명단·학생 계정 발급
+│   ├── parse-pasted-table.js    표 붙여넣기 텍스트 파싱 (순수 함수, 단위 테스트 있음)
+│   ├── vocab-paste-import.js    단어 표 붙여넣기 일괄 추가 UI
+│   ├── hsk-reading-data.js      HSK 독해 프로토타입 샘플 데이터 (실제 콘텐츠로 교체 예정)
+│   └── hsk-reading.js           HSK 독해 프로토타입 렌더러 (데이터 → A4 시험지 DOM)
 ├── data/                     초기 샘플 콘텐츠(第一课 등)의 원본 JSON. 지금은 로드되지 않고
 │                             참고·백업용으로만 남아 있음 — 실제 데이터는 D1에 있음
 ├── functions/                Cloudflare Pages Functions (백엔드 API) — 자세한 내용은 README-api.md
