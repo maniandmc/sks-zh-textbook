@@ -47,13 +47,16 @@ const HskReading = (() => {
     return String(raw == null ? '' : raw).replace(/\*\*/g, '').length;
   }
 
-  function renderOptionRow(options, extraClass) {
+  // 보기를 클릭하면 바로 정답·해설을 확인할 수 있다 (연습문제 퀴즈와 같은 방식).
+  // 클릭 판정을 위해 각 보기에 문제 id/보기 순번/정답 순번을 data 속성으로 심어둔다.
+  function renderOptionRow(question, extraClass) {
+    const options = question.options;
     const wrap = options.some(o => plainLength(o) > OPTION_WRAP_THRESHOLD);
     const cls = `option-row ${wrap ? 'option-row-2col' : 'option-row-4col'} ${extraClass || ''}`;
     const labels = ['A', 'B', 'C', 'D'];
     const items = options
       .map((o, i) => `
-        <div class="option-item">
+        <div class="option-item" data-question-id="${question.id}" data-option-index="${i}" data-answer-index="${question.answerIndex}">
           <span class="option-label">${labels[i]}</span>
           <span class="option-text">${formatInline(o)}</span>
         </div>
@@ -62,12 +65,13 @@ const HskReading = (() => {
     return `<div class="${cls}">${items}</div>`;
   }
 
-  function renderOptionList(options) {
+  function renderOptionList(question) {
+    const options = question.options;
     const labels = ['A', 'B', 'C', 'D'];
     return `
       <div class="option-list">
         ${options.map((o, i) => `
-          <div class="option-item">
+          <div class="option-item" data-question-id="${question.id}" data-option-index="${i}" data-answer-index="${question.answerIndex}">
             <span class="option-label">${labels[i]}</span>
             <span class="option-text">${formatInline(o)}</span>
           </div>
@@ -76,13 +80,24 @@ const HskReading = (() => {
     `;
   }
 
+  function renderExplanation(question) {
+    return `
+      <div class="explanation" data-explanation-for="${question.id}">
+        <span class="explanation-label">해설</span> ${formatInline(question.explanation || '')}
+      </div>
+    `;
+  }
+
   /* ---------------- 제1부분: 빈칸 채우기 ---------------- */
 
   function renderPart1Group(group) {
     const questionsHTML = group.questions.map(q => `
-      <div class="p1-question">
-        <span class="q-num">${q.no}.</span>
-        ${renderOptionRow(q.options)}
+      <div class="p1-question-wrap">
+        <div class="p1-question">
+          <span class="q-num">${q.no}.</span>
+          ${renderOptionRow(q)}
+        </div>
+        ${renderExplanation(q)}
       </div>
     `).join('');
 
@@ -105,7 +120,7 @@ const HskReading = (() => {
       <div class="question-group question-group-single">
         <span class="q-num">${escapeHTML(group.range)}.</span>
         <div class="passage-block passage-block-inline">${formatPassage(group.passage)}</div>
-        ${q ? renderOptionList(q.options) : ''}
+        ${q ? renderOptionList(q) + renderExplanation(q) : ''}
       </div>
     `;
   }
@@ -120,7 +135,8 @@ const HskReading = (() => {
     const questionsHTML = group.questions.map(q => `
       <div class="p3-question">
         <p class="p3-question-text"><span class="q-num">${q.no}.</span> ${formatInline(q.text || '')}</p>
-        ${renderOptionRow(q.options, 'option-row-grid')}
+        ${renderOptionRow(q, 'option-row-grid')}
+        ${renderExplanation(q)}
       </div>
     `).join('');
 
@@ -155,10 +171,42 @@ const HskReading = (() => {
     `;
   }
 
+  // 보기를 클릭하면 그 문제의 모든 보기를 잠그고, 정답을 표시하고, 해설을 펼친다.
+  // 문제 하나당 한 번만 답을 확인할 수 있다 (다시 클릭해도 바뀌지 않음).
+  function wireInteractivity(container) {
+    const itemsByQuestion = new Map();
+    container.querySelectorAll('[data-question-id]').forEach(item => {
+      const qid = item.dataset.questionId;
+      if (!itemsByQuestion.has(qid)) itemsByQuestion.set(qid, []);
+      itemsByQuestion.get(qid).push(item);
+    });
+
+    itemsByQuestion.forEach((items, qid) => {
+      let answered = false;
+      items.forEach(item => {
+        item.addEventListener('click', () => {
+          if (answered) return;
+          answered = true;
+          const selectedIndex = Number(item.dataset.optionIndex);
+          const answerIndex = Number(item.dataset.answerIndex);
+          items.forEach(it => {
+            it.classList.add('answered');
+            const idx = Number(it.dataset.optionIndex);
+            if (idx === answerIndex) it.classList.add('correct');
+            else if (idx === selectedIndex) it.classList.add('wrong');
+          });
+          const explanationEl = container.querySelector(`[data-explanation-for="${qid}"]`);
+          if (explanationEl) explanationEl.classList.add('show');
+        });
+      });
+    });
+  }
+
   function render(container, data) {
     container.innerHTML = data
       .map((partData, i) => renderPartPage(partData, BASE_PAGE_NUMBER + i))
       .join('');
+    wireInteractivity(container);
   }
 
   return { render };

@@ -18,6 +18,10 @@
   --rule: #1a1a1a;
   --page-w: 210mm;
   --page-h: 297mm;
+  --correct: #2f7d4f;
+  --correct-soft: #e4f2e8;
+  --wrong: #b0392e;
+  --wrong-soft: #fbeae8;
 }
 
 * { box-sizing: border-box; }
@@ -191,6 +195,45 @@ strong { font-weight: 700; }
 .option-row-2col { grid-template-columns: repeat(2, 1fr); }
 .option-row .option-item { min-width: 0; }
 
+/* 보기 클릭 → 정답/해설 즉시 확인 (교사·학생 공통) */
+.option-item {
+  cursor: pointer;
+  padding: 2px 5px;
+  margin: -2px -5px;
+  border-radius: 4px;
+  transition: background 100ms ease;
+}
+.option-item:hover { background: rgba(0, 0, 0, 0.05); }
+.option-item.answered { cursor: default; }
+.option-item.answered:hover { background: none; }
+.option-item.correct {
+  background: var(--correct-soft);
+  color: var(--correct);
+}
+.option-item.correct .option-label,
+.option-item.correct .option-text { color: var(--correct); font-weight: 700; }
+.option-item.wrong {
+  background: var(--wrong-soft);
+  color: var(--wrong);
+}
+.option-item.wrong .option-text { text-decoration: line-through; }
+
+.explanation {
+  display: none;
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--paper-backdrop);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.explanation.show { display: block; }
+.explanation-label {
+  font-weight: 700;
+  color: var(--ink);
+  margin-right: 4px;
+}
+
 /* -------------------- 제1부분: 빈칸 채우기 -------------------- */
 
 .p1-question-list {
@@ -199,6 +242,7 @@ strong { font-weight: 700; }
   flex-direction: column;
   gap: 10px;
 }
+.p1-question-wrap { display: block; }
 .p1-question {
   display: flex;
   align-items: baseline;

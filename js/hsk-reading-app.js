@@ -546,6 +546,10 @@ const HskApp = (() => {
             `).join('')}
           </div>
         </div>
+        <div class="admin-field">
+          <label for="q-explanation-input">해설</label>
+          <textarea id="q-explanation-input" rows="2" placeholder="이 정답인 이유를 설명해주세요">${question && question.explanation ? escapeHTML(question.explanation) : ''}</textarea>
+        </div>
         <p class="login-error" id="q-form-error"></p>
         <div class="admin-form-actions">
           <button class="btn-primary" id="q-form-save">${isEdit ? '저장' : '추가'}</button>
@@ -569,6 +573,7 @@ const HskApp = (() => {
         optionC: host.querySelector('#q-opt-c').value.trim(),
         optionD: host.querySelector('#q-opt-d').value.trim(),
         answerIndex: Number(answerRadio.value),
+        explanation: host.querySelector('#q-explanation-input').value.trim(),
       };
       try {
         if (isEdit) {
