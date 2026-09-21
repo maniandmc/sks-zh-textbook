@@ -226,6 +226,8 @@ strong { font-weight: 700; }
   border-radius: 4px;
   font-size: 13px;
   color: var(--ink-soft);
+  line-height: 1.6;
+  white-space: pre-line; /* 해설에 입력한 줄바꿈(Enter)을 그대로 살린다 */
 }
 .explanation.show { display: block; }
 .explanation-label {
