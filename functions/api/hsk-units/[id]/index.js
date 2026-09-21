@@ -17,7 +17,7 @@ export async function onRequestGet(context) {
   const access = await checkUnitAccess(db, unitId, user);
   if (access instanceof Response) return access;
 
-  const full = await serializeUnitFull(db, access.unit);
+  const full = await serializeUnitFull(db, access.unit, { includeAnswers: access.permission.canWrite });
   return jsonResponse({ ...full, canWrite: access.permission.canWrite });
 }
 

@@ -139,20 +139,21 @@ export async function nextQuestionSortOrder(db, groupId) {
  *   [{ part, instruction, groups: [{ id, range, passage, image, questions: [{ id, no, text, options }] }] }]
  * 그룹/문제가 하나도 없는 부분은 아예 빼서 빈 페이지가 나오지 않게 한다.
  */
-export async function serializeUnitFull(db, unit) {
+export async function serializeUnitFull(db, unit, { includeAnswers = false } = {}) {
   const { results: groupRows } = await db.prepare(
     `SELECT id, part, range, passage, image_url, sort_order
      FROM hsk_reading_groups WHERE unit_id = ? ORDER BY part ASC, sort_order ASC, id ASC`
   ).bind(unit.id).all();
 
   const { results: questionRows } = await db.prepare(
-    `SELECT q.id, q.group_id, q.no, q.text, q.option_a, q.option_b, q.option_c, q.option_d, q.sort_order
+    `SELECT q.id, q.group_id, q.no, q.text, q.option_a, q.option_b, q.option_c, q.option_d, q.answer_index, q.sort_order
      FROM hsk_reading_questions q
      JOIN hsk_reading_groups g ON g.id = q.group_id
      WHERE g.unit_id = ?
      ORDER BY q.sort_order ASC, q.id ASC`
   ).bind(unit.id).all();
 
+  // 학생에게는 정답을 절대 내려주지 않는다 (답이 API 응답에 아예 없어야 개발자 도구로도 안 보임).
   const questionsByGroup = new Map();
   for (const q of questionRows) {
     if (!questionsByGroup.has(q.group_id)) questionsByGroup.set(q.group_id, []);
@@ -161,6 +162,7 @@ export async function serializeUnitFull(db, unit) {
       no: q.no,
       text: q.text || undefined,
       options: [q.option_a, q.option_b, q.option_c, q.option_d],
+      ...(includeAnswers ? { answerIndex: q.answer_index } : {}),
     });
   }
 
@@ -212,6 +214,7 @@ function questionRowToJson(row) {
     no: row.no,
     text: row.text || undefined,
     options: [row.option_a, row.option_b, row.option_c, row.option_d],
+    answerIndex: row.answer_index,
   };
 }
 
@@ -237,6 +240,7 @@ function validateQuestionBody(body) {
   for (const key of ['optionA', 'optionB', 'optionC', 'optionD']) {
     if (!body[key] || !String(body[key]).trim()) return '보기 A~D를 모두 입력해주세요';
   }
+  if (![0, 1, 2, 3].includes(Number(body.answerIndex))) return '정답을 선택해주세요';
   return null;
 }
 
@@ -248,6 +252,7 @@ function questionBodyToRow(body) {
     option_b: String(body.optionB).trim(),
     option_c: String(body.optionC).trim(),
     option_d: String(body.optionD).trim(),
+    answer_index: Number(body.answerIndex),
   };
 }
 
@@ -381,9 +386,9 @@ export async function handleCreateQuestion(context) {
   const sortOrder = await nextQuestionSortOrder(db, groupId);
 
   const result = await db.prepare(
-    `INSERT INTO hsk_reading_questions (group_id, no, text, option_a, option_b, option_c, option_d, sort_order)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-  ).bind(groupId, row.no, row.text, row.option_a, row.option_b, row.option_c, row.option_d, sortOrder).run();
+    `INSERT INTO hsk_reading_questions (group_id, no, text, option_a, option_b, option_c, option_d, answer_index, sort_order)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(groupId, row.no, row.text, row.option_a, row.option_b, row.option_c, row.option_d, row.answer_index, sortOrder).run();
 
   await touchUnit(db, unitId);
 
@@ -426,9 +431,9 @@ export async function handleUpdateQuestion(context) {
   const row = questionBodyToRow(body);
   await db.prepare(
     `UPDATE hsk_reading_questions
-     SET no = ?, text = ?, option_a = ?, option_b = ?, option_c = ?, option_d = ?, updated_at = datetime('now')
+     SET no = ?, text = ?, option_a = ?, option_b = ?, option_c = ?, option_d = ?, answer_index = ?, updated_at = datetime('now')
      WHERE id = ? AND group_id = ?`
-  ).bind(row.no, row.text, row.option_a, row.option_b, row.option_c, row.option_d, questionId, groupId).run();
+  ).bind(row.no, row.text, row.option_a, row.option_b, row.option_c, row.option_d, row.answer_index, questionId, groupId).run();
 
   await touchUnit(db, unitId);
 

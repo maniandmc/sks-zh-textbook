@@ -359,7 +359,7 @@ const HskApp = (() => {
     const questionsHTML = group.questions.map(q => `
       <div class="admin-row">
         <div class="admin-row-main">
-          <p class="admin-row-sub"><strong>${q.no}.</strong> ${escapeHTML(q.text || '')} ${q.options.map((o, i) => `${'ABCD'[i]}.${escapeHTML(o)}`).join('  ')}</p>
+          <p class="admin-row-sub"><strong>${q.no}.</strong> ${escapeHTML(q.text || '')} ${q.options.map((o, i) => `${'ABCD'[i]}.${escapeHTML(o)}${i === q.answerIndex ? ' ✓' : ''}`).join('  ')}</p>
         </div>
         <div class="admin-row-actions">
           <button class="icon-text-btn" data-edit-question="${q.id}" data-group-id="${group.id}">수정</button>
@@ -507,6 +507,8 @@ const HskApp = (() => {
   function renderQuestionForm(host, unitId, groupId, question) {
     const isEdit = !!question;
     const opts = question ? question.options : ['', '', '', ''];
+    const answerIndex = question ? question.answerIndex : null;
+    const labels = ['A', 'B', 'C', 'D'];
     host.innerHTML = `
       <div class="admin-card">
         <div class="admin-field-row">
@@ -519,13 +521,16 @@ const HskApp = (() => {
             <input type="text" id="q-text-input" value="${question && question.text ? escapeHTML(question.text) : ''}">
           </div>
         </div>
-        <div class="admin-field-row">
-          <div class="admin-field"><label>A</label><input type="text" id="q-opt-a" value="${escapeHTML(opts[0] || '')}"></div>
-          <div class="admin-field"><label>B</label><input type="text" id="q-opt-b" value="${escapeHTML(opts[1] || '')}"></div>
-        </div>
-        <div class="admin-field-row">
-          <div class="admin-field"><label>C</label><input type="text" id="q-opt-c" value="${escapeHTML(opts[2] || '')}"></div>
-          <div class="admin-field"><label>D</label><input type="text" id="q-opt-d" value="${escapeHTML(opts[3] || '')}"></div>
+        <div class="admin-field">
+          <label>보기 (정답 앞의 라디오 버튼을 선택하세요)</label>
+          <div class="admin-quiz-options">
+            ${labels.map((label, i) => `
+              <div class="admin-quiz-option-row">
+                <input type="radio" name="q-answer" value="${i}" ${answerIndex === i ? 'checked' : ''}>
+                <input type="text" class="qf-opt-input" id="q-opt-${label.toLowerCase()}" value="${escapeHTML(opts[i] || '')}" placeholder="보기 ${label}">
+              </div>
+            `).join('')}
+          </div>
         </div>
         <p class="login-error" id="q-form-error"></p>
         <div class="admin-form-actions">
@@ -537,6 +542,11 @@ const HskApp = (() => {
     host.querySelector('#q-form-cancel').addEventListener('click', () => showUnitEdit(unitId));
     host.querySelector('#q-form-save').addEventListener('click', async () => {
       const errorEl = host.querySelector('#q-form-error');
+      const answerRadio = host.querySelector('input[name="q-answer"]:checked');
+      if (!answerRadio) {
+        errorEl.textContent = '정답을 선택해주세요';
+        return;
+      }
       const data = {
         no: host.querySelector('#q-no-input').value.trim(),
         text: host.querySelector('#q-text-input').value.trim(),
@@ -544,6 +554,7 @@ const HskApp = (() => {
         optionB: host.querySelector('#q-opt-b').value.trim(),
         optionC: host.querySelector('#q-opt-c').value.trim(),
         optionD: host.querySelector('#q-opt-d').value.trim(),
+        answerIndex: Number(answerRadio.value),
       };
       try {
         if (isEdit) {
