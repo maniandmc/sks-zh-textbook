@@ -416,7 +416,8 @@ const HskApp = (() => {
     root.querySelectorAll('[data-add-question]').forEach(btn => {
       btn.addEventListener('click', () => {
         const groupId = Number(btn.dataset.addQuestion);
-        renderQuestionForm(document.getElementById(`question-form-host-${groupId}`), unit.id, groupId, null);
+        const group = findGroupById(unit, groupId);
+        renderQuestionForm(document.getElementById(`question-form-host-${groupId}`), unit.id, group, null);
       });
     });
 
@@ -426,7 +427,7 @@ const HskApp = (() => {
         const questionId = Number(btn.dataset.editQuestion);
         const group = findGroupById(unit, groupId);
         const question = group.questions.find(q => q.id === questionId);
-        renderQuestionForm(document.getElementById(`question-form-host-${groupId}`), unit.id, groupId, question);
+        renderQuestionForm(document.getElementById(`question-form-host-${groupId}`), unit.id, group, question);
       });
     });
 
@@ -504,17 +505,30 @@ const HskApp = (() => {
     });
   }
 
-  function renderQuestionForm(host, unitId, groupId, question) {
+  // 제1부분은 빈칸 {번호}가 지문 안에 자유롭게 박혀 있어서 번호를 직접 입력해야
+  // 하지만, 제2/3부분은 그룹의 "문제 번호"(예: 61, 71-74)만 봐도 각 문제 번호가
+  // 그대로 정해지므로 다시 입력받을 필요가 없다 — 자동으로 채우고 잠가둔다.
+  function nextQuestionNumber(group) {
+    if (group.questions.length > 0) {
+      return Math.max(...group.questions.map(q => q.no)) + 1;
+    }
+    const m = String(group.range).match(/\d+/);
+    return m ? Number(m[0]) : '';
+  }
+
+  function renderQuestionForm(host, unitId, group, question) {
     const isEdit = !!question;
     const opts = question ? question.options : ['', '', '', ''];
     const answerIndex = question ? question.answerIndex : null;
     const labels = ['A', 'B', 'C', 'D'];
+    const numberIsAuto = group.part !== 1;
+    const questionNo = isEdit ? question.no : (numberIsAuto ? nextQuestionNumber(group) : '');
     host.innerHTML = `
       <div class="admin-card">
         <div class="admin-field-row">
           <div class="admin-field">
-            <label for="q-no-input">문제 번호</label>
-            <input type="text" id="q-no-input" value="${question ? question.no : ''}">
+            <label for="q-no-input">문제 번호${numberIsAuto ? ' (그룹 번호로 자동 지정됨)' : ''}</label>
+            <input type="text" id="q-no-input" value="${questionNo}" ${numberIsAuto ? 'disabled' : ''}>
           </div>
           <div class="admin-field">
             <label for="q-text-input">문항 지시문 (선택)</label>
@@ -558,9 +572,9 @@ const HskApp = (() => {
       };
       try {
         if (isEdit) {
-          await Api.hskUnits.updateQuestion(unitId, groupId, question.id, data);
+          await Api.hskUnits.updateQuestion(unitId, group.id, question.id, data);
         } else {
-          await Api.hskUnits.createQuestion(unitId, groupId, data);
+          await Api.hskUnits.createQuestion(unitId, group.id, data);
         }
       } catch (err) {
         errorEl.textContent = err.message || '저장에 실패했습니다';

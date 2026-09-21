@@ -98,12 +98,14 @@ const HskReading = (() => {
   /* ---------------- 제2부분: 일치하는 내용 고르기 ---------------- */
 
   function renderPart2Group(group) {
+    // 그룹을 만든 직후 문제를 아직 추가하지 않은 상태(편집 중)일 수 있으므로,
+    // 문제가 없으면 보기 목록 없이 지문만 보여준다.
     const q = group.questions[0];
     return `
       <div class="question-group question-group-single">
         <span class="q-num">${escapeHTML(group.range)}.</span>
         <div class="passage-block passage-block-inline">${formatPassage(group.passage)}</div>
-        ${renderOptionList(q.options)}
+        ${q ? renderOptionList(q.options) : ''}
       </div>
     `;
   }
