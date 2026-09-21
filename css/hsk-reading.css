@@ -1,0 +1,251 @@
+/* ============================================================
+   hsk-reading.css — HSK 5급 독해 A4 시험지 레이아웃
+   실제 인쇄물과 같은 느낌을 내야 하므로 앱의 테마(다크모드/포인트
+   컬러)는 가져오지 않고, 이 페이지 전용의 흑백 인쇄 톤을 사용한다.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
+
+:root {
+  --ink: #1a1a1a;
+  --ink-soft: #4a4a4a;
+  --paper: #ffffff;
+  --paper-backdrop: #E5E3DE;
+  --rule: #1a1a1a;
+  --page-w: 210mm;
+  --page-h: 297mm;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--paper-backdrop);
+  color: var(--ink);
+  font-family: 'Noto Serif SC', 'Songti SC', 'PingFang SC', serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* -------------------- 화면 미리보기용 툴바 (인쇄 시 숨김) -------------------- */
+
+.hsk-toolbar {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+}
+.hsk-print-btn {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 9px 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.hsk-print-btn:hover { background: #000; }
+
+/* -------------------- A4 페이지 -------------------- */
+
+#exam-root {
+  padding: 32px 0 60px;
+}
+
+.exam-page {
+  position: relative;
+  width: var(--page-w);
+  min-height: var(--page-h);
+  margin: 0 auto 32px;
+  background: var(--paper);
+  padding: 24mm 20mm 26mm;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.page-number {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12mm;
+  text-align: center;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 12.5px;
+  letter-spacing: 2px;
+  color: var(--ink-soft);
+}
+
+/* -------------------- 제목 / 지시문 -------------------- */
+
+.section-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+.part-title {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 18px;
+}
+.instruction {
+  text-align: left;
+  font-size: 14.5px;
+  font-weight: 600;
+  margin: 0 0 22px;
+}
+
+/* -------------------- 지문 공통 -------------------- */
+
+.question-group { margin-bottom: 30px; }
+.question-group:last-child { margin-bottom: 0; }
+
+.group-range {
+  font-weight: 700;
+  font-size: 15px;
+  margin: 0 0 6px;
+}
+
+.passage-text {
+  text-indent: 2em;
+  font-size: 15px;
+  line-height: 2;
+  margin: 0 0 4px;
+}
+.passage-text:last-child { margin-bottom: 0; }
+
+.blank {
+  display: inline-block;
+  min-width: 2.8em;
+  padding: 0 4px;
+  text-align: center;
+  font-weight: 600;
+  border-bottom: 1.4px solid var(--rule);
+}
+
+strong { font-weight: 700; }
+
+/* -------------------- 보기 공통 -------------------- */
+
+.option-label {
+  font-weight: 700;
+  margin-right: 4px;
+}
+.option-text { font-weight: 400; }
+
+/* 한 줄 4열 / 보기가 길면 2열로 줄바꿈 */
+.option-row {
+  display: grid;
+  gap: 4px 18px;
+  font-size: 14.5px;
+}
+.option-row-4col { grid-template-columns: repeat(4, 1fr); }
+.option-row-2col { grid-template-columns: repeat(2, 1fr); }
+.option-row .option-item { min-width: 0; }
+
+/* -------------------- 제1부분: 빈칸 채우기 -------------------- */
+
+.p1-question-list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.p1-question {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.p1-question .q-num {
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+  width: 1.6em;
+}
+.p1-question .option-row { flex: 1; }
+
+/* -------------------- 제2부분: 일치 고르기 -------------------- */
+
+.question-group-single {
+  display: flex;
+  flex-direction: column;
+}
+.question-group-single .q-num {
+  font-weight: 700;
+  font-size: 15px;
+}
+.passage-block-inline { margin-top: 4px; }
+
+.option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 14.5px;
+}
+.option-list .option-item { display: block; }
+
+/* -------------------- 제3부분: 장문 독해 -------------------- */
+
+.passage-with-image::after { content: ''; display: table; clear: both; }
+.passage-image {
+  float: right;
+  width: 42mm;
+  height: auto;
+  margin: 2px 0 10px 14px;
+  border: 1px solid var(--ink-soft);
+}
+
+.p3-question-list {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.p3-question-text {
+  font-size: 15px;
+  font-weight: 400;
+  margin: 0 0 8px;
+}
+.p3-question-text .q-num { font-weight: 700; margin-right: 2px; }
+
+.option-row-grid {
+  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-rows: repeat(2, auto);
+}
+
+/* -------------------- 인쇄 -------------------- */
+
+@media print {
+  @page { size: A4; margin: 0; }
+
+  body { background: var(--paper); }
+  .hsk-toolbar { display: none; }
+
+  #exam-root { padding: 0; }
+
+  .exam-page {
+    margin: 0;
+    box-shadow: none;
+    page-break-after: always;
+  }
+  .exam-page:last-child { page-break-after: auto; }
+}
+
+/* -------------------- 작은 화면: 스크롤로 넘겨보기 -------------------- */
+
+@media (max-width: 760px) {
+  .exam-page {
+    width: 100%;
+    min-height: auto;
+    padding: 16px 16px 40px;
+  }
+  .page-number { position: static; margin-top: 24px; }
+  .passage-image { width: 34vw; }
+}

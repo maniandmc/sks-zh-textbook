@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HSK 5급 독해 - 레이아웃 프로토타입</title>
+<link rel="stylesheet" href="css/hsk-reading.css">
+</head>
+<body>
+
+  <div class="hsk-toolbar">
+    <button class="hsk-print-btn" id="hsk-print-btn">인쇄</button>
+  </div>
+
+  <div id="exam-root"></div>
+
+  <script src="js/hsk-reading-data.js"></script>
+  <script src="js/hsk-reading.js"></script>
+  <script>
+    HskReading.render(document.getElementById('exam-root'), window.HSK_READING_DATA);
+    document.getElementById('hsk-print-btn').addEventListener('click', () => window.print());
+  </script>
+
+</body>
+</html>
