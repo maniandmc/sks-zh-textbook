@@ -10,16 +10,22 @@
 
   function showLogin(message) {
     document.getElementById('login-screen').classList.add('show');
+    document.getElementById('hsk-header').style.display = 'none';
     document.getElementById('hsk-toolbar').style.display = 'none';
     document.getElementById('exam-root').style.display = 'none';
     const errorEl = document.getElementById('login-error');
     if (errorEl) errorEl.textContent = message || '';
   }
 
-  function showExam() {
+  function showExam(user) {
     document.getElementById('login-screen').classList.remove('show');
+    document.getElementById('hsk-header').style.display = '';
     document.getElementById('hsk-toolbar').style.display = '';
     document.getElementById('exam-root').style.display = '';
+
+    const roleLabel = user.role === 'teacher' ? '교사' : '학생';
+    document.getElementById('header-user-info').textContent = `${user.displayName} · ${roleLabel}`;
+
     HskReading.render(document.getElementById('exam-root'), window.HSK_READING_DATA);
   }
 
@@ -38,9 +44,9 @@
       }
       submitBtn.disabled = true;
       try {
-        await Api.auth.login(username, password);
+        const user = await Api.auth.login(username, password);
         document.getElementById('login-password').value = '';
-        showExam();
+        showExam(user);
       } catch (err) {
         errorEl.textContent = err.message || '로그인에 실패했습니다';
       } finally {
@@ -53,9 +59,25 @@
     document.getElementById('hsk-print-btn').addEventListener('click', () => window.print());
   }
 
+  function wireHomeButton() {
+    document.getElementById('hsk-home-btn').addEventListener('click', () => {
+      location.href = 'index.html';
+    });
+  }
+
+  function wireLogoutButton() {
+    document.getElementById('hsk-logout-btn').addEventListener('click', async () => {
+      if (!confirm('로그아웃하시겠습니까?')) return;
+      try { await Api.auth.logout(); } catch (e) { /* 세션이 이미 없어도 로그아웃 진행 */ }
+      showLogin();
+    });
+  }
+
   async function init() {
     wireLoginForm();
     wirePrintButton();
+    wireHomeButton();
+    wireLogoutButton();
 
     let me;
     try {
@@ -65,7 +87,7 @@
     }
 
     if (me.user) {
-      showExam();
+      showExam(me.user);
     } else {
       showLogin();
     }
