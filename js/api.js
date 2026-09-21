@@ -116,5 +116,12 @@ const Api = (() => {
       toggle: (type, refId) => post('/api/bookmarks', { type, refId }),
       remove: (type, refId) => del('/api/bookmarks', { type, refId }),
     },
+
+    announcements: {
+      list: () => get('/api/announcements'),
+      create: (data) => post('/api/announcements', data),
+      update: (id, data) => put(`/api/announcements/${id}`, data),
+      remove: (id) => del(`/api/announcements/${id}`),
+    },
   };
 })();

@@ -651,6 +651,25 @@ input {
   flex-shrink: 0;
 }
 
+.announcements-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+.announcement-col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.announcement-col-header .section-heading { margin: 0; }
+
+@media (max-width: 760px) {
+  .announcements-grid { grid-template-columns: 1fr; }
+}
+
 /* ==================================================
    교재 화면 (Reader)
    ================================================== */
