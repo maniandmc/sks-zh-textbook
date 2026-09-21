@@ -1,8 +1,9 @@
 'use strict';
 
 /* ============================================================
-   admin.js — 교재 관리 화면 (교사 전용)
-   - 단원 추가/수정/삭제
+   admin.js — 교재 관리 화면
+   - 교사: 담당 클래스의 단원 추가/수정/삭제
+   - 학생: 자기만의 개인 단원(owner_type='student')을 자유롭게 추가/수정/삭제
    - 선택 단원의 문장/단어/문법/문제 추가/수정/삭제
      (실제 폼은 EditorForms 공용 모듈을 사용)
    - 편집 내용은 API를 통해 즉시 D1에 저장됨
@@ -14,6 +15,8 @@ const Admin = (() => {
   let selectedLessonId = null;
 
   async function render(container, lessonId) {
+    const user = App.getCurrentUser();
+    const isTeacher = user && user.role === 'teacher';
     const meta = await App.getLessonsMeta();
     const editable = meta.lessons.filter(l => l.canWrite);
 
@@ -28,8 +31,10 @@ const Admin = (() => {
     container.innerHTML = `
       <div class="content-inner" style="max-width:920px;">
         <div class="page-header">
-          <h1>교재 관리</h1>
-          <p>단원과 본문·단어·문법·문제를 추가·수정·삭제할 수 있습니다. 변경 사항은 이 브라우저에 자동 저장되며, 학습 화면에서 편집한 내용과도 동일하게 반영됩니다.</p>
+          <h1>${isTeacher ? '교재 관리' : '내 교재'}</h1>
+          <p>${isTeacher
+            ? '단원과 본문·단어·문법·문제를 추가·수정·삭제할 수 있습니다. 변경 사항은 이 브라우저에 자동 저장되며, 학습 화면에서 편집한 내용과도 동일하게 반영됩니다.'
+            : '나만의 단원을 만들어 문장·단어·문법·문제를 자유롭게 추가하고 학습할 수 있습니다. 클래스 교재와는 별개로 나만 볼 수 있습니다.'}</p>
         </div>
 
         <div class="admin-toolbar">

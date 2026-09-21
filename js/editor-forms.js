@@ -342,11 +342,16 @@ const EditorForms = (() => {
   /* ---------------- 단원 정보 폼 (제목류) ---------------- */
 
   async function renderLessonMetaForm(hostEl, lesson, onDone) {
-    // 교재 관리 화면은 교사 전용이므로, 새 단원은 항상 교사가 담당 클래스 중 하나를 골라 만든다.
+    // 교사가 새 단원을 만들 때는 담당 클래스 중 하나를 골라야 하지만,
+    // 학생은 자기 개인 단원 영역 하나뿐이라 고를 필요가 없다.
+    const user = App.getCurrentUser();
+    const isTeacher = user && user.role === 'teacher';
+    const showClassSelect = !lesson && isTeacher;
+
     hostEl.innerHTML = `
       <div class="admin-card">
         <p class="section-heading">${lesson ? '단원 정보 수정' : '새 단원 추가'}</p>
-        ${!lesson ? `
+        ${showClassSelect ? `
           <div class="admin-field">
             <label>클래스</label>
             <select id="ef-l-class"><option value="">불러오는 중...</option></select>
@@ -371,7 +376,7 @@ const EditorForms = (() => {
       </div>
     `;
 
-    if (!lesson) {
+    if (showClassSelect) {
       loadClassOptions(hostEl.querySelector('#ef-l-class'));
     }
 
@@ -391,13 +396,16 @@ const EditorForms = (() => {
         if (lesson) {
           await App.updateLessonMeta(lesson.id, { title, chineseTitle, koreanTitle });
           App.showToast('단원 정보를 수정했습니다');
-        } else {
+        } else if (showClassSelect) {
           const select = hostEl.querySelector('#ef-l-class');
           if (!select || !select.value) {
             App.showToast('먼저 클래스를 만들어야 단원을 추가할 수 있습니다');
             return;
           }
           newId = await App.addLesson({ title, chineseTitle, koreanTitle, ownerType: 'class', ownerId: Number(select.value) });
+          App.showToast('새 단원을 추가했습니다');
+        } else {
+          newId = await App.addLesson({ title, chineseTitle, koreanTitle, ownerType: 'student', ownerId: user.id });
           App.showToast('새 단원을 추가했습니다');
         }
       } catch (e) {

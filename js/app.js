@@ -456,7 +456,7 @@ const App = (() => {
   /* ---------------- 라우팅 ---------------- */
 
   async function navigate(view, opts = {}) {
-    if (view === 'admin' && (!state.currentUser || state.currentUser.role !== 'teacher')) {
+    if (view === 'admin' && !state.currentUser) {
       view = 'home';
     }
     state.currentView = view;
@@ -751,7 +751,11 @@ const App = (() => {
     updateEditModeButton();
 
     const adminNavItem = document.querySelector('.nav-item[data-view="admin"]');
-    if (adminNavItem) adminNavItem.style.display = user.role === 'teacher' ? '' : 'none';
+    if (adminNavItem) {
+      adminNavItem.style.display = '';
+      const labelEl = adminNavItem.querySelector('span');
+      if (labelEl) labelEl.textContent = user.role === 'teacher' ? '교재 관리' : '내 교재';
+    }
 
     if (user.role === 'student') {
       await ensureBookmarks();
