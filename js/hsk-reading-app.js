@@ -356,6 +356,38 @@ const HskApp = (() => {
   }
 
   function renderGroupCard(group, part) {
+    // 제2부분(내용일치)은 지문 하나에 문제가 항상 1개뿐이라, 그룹 수정 화면에서
+    // 보기/정답/해설까지 함께 입력받는다 — 별도의 문제 추가/수정 UI가 필요 없다.
+    if (part === 2) {
+      const q = group.questions[0];
+      const summaryHTML = q
+        ? `
+          <div class="admin-row">
+            <div class="admin-row-main">
+              <p class="admin-row-sub">${q.options.map((o, i) => `${'ABCD'[i]}.${escapeHTML(o)}${i === q.answerIndex ? ' ✓' : ''}`).join('  ')}</p>
+              <p class="admin-row-sub">해설: ${escapeHTML(q.explanation || '')}</p>
+            </div>
+          </div>
+        `
+        : '<p class="vocab-empty">아직 보기/정답이 입력되지 않았습니다</p>';
+
+      return `
+        <div class="admin-card" data-group-card="${group.id}">
+          <div class="admin-lesson-header-row">
+            <div class="admin-row-main">
+              <p class="admin-row-zh">${escapeHTML(group.range)}.</p>
+              <p class="admin-row-sub">${escapeHTML(group.passage)}</p>
+            </div>
+            <div class="admin-lesson-header-actions">
+              <button class="icon-text-btn" data-edit-group="${group.id}" data-part="${part}">수정</button>
+              <button class="icon-text-btn danger" data-delete-group="${group.id}">삭제</button>
+            </div>
+          </div>
+          <div class="admin-list" style="margin-top:12px;">${summaryHTML}</div>
+        </div>
+      `;
+    }
+
     const questionsHTML = group.questions.map(q => `
       <div class="admin-row">
         <div class="admin-row-main">
@@ -454,9 +486,22 @@ const HskApp = (() => {
     return null;
   }
 
+  // 그룹의 "문제 번호"(예: 61)에서 앞의 숫자만 뽑아 문제의 no로 쓴다.
+  function parseRangeNumber(range) {
+    const m = String(range).match(/\d+/);
+    return m ? Number(m[0]) : null;
+  }
+
   function renderGroupForm(host, unitId, group, fixedPart) {
     const isEdit = !!group;
     const part = fixedPart;
+    // 제2부분은 지문 하나당 문제가 항상 1개라, 그룹 폼에서 보기/정답/해설까지 함께 받는다.
+    const existingQuestion = part === 2 && group ? group.questions[0] : null;
+    const opts = existingQuestion ? existingQuestion.options : ['', '', '', ''];
+    const answerIndex = existingQuestion ? existingQuestion.answerIndex : null;
+    const explanation = existingQuestion ? existingQuestion.explanation : '';
+    const labels = ['A', 'B', 'C', 'D'];
+
     host.innerHTML = `
       <div class="admin-card">
         <p class="admin-row-sub">부분: <strong>제${part}부분 — ${escapeHTML(PART_LABELS[part])}</strong></p>
@@ -474,6 +519,23 @@ const HskApp = (() => {
             <input type="text" id="group-image-input" value="${group && group.image ? escapeHTML(group.image) : ''}">
           </div>
         ` : ''}
+        ${part === 2 ? `
+          <div class="admin-field">
+            <label>보기 (정답 앞의 라디오 버튼을 선택하세요)</label>
+            <div class="admin-quiz-options">
+              ${labels.map((label, i) => `
+                <div class="admin-quiz-option-row">
+                  <input type="radio" name="group-q-answer" value="${i}" ${answerIndex === i ? 'checked' : ''}>
+                  <input type="text" class="qf-opt-input" id="group-q-opt-${label.toLowerCase()}" value="${escapeHTML(opts[i] || '')}" placeholder="보기 ${label}">
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="admin-field">
+            <label for="group-q-explanation-input">해설</label>
+            <textarea id="group-q-explanation-input" rows="5" placeholder="이 정답인 이유를 설명해주세요">${escapeHTML(explanation || '')}</textarea>
+          </div>
+        ` : ''}
         <p class="login-error" id="group-form-error"></p>
         <div class="admin-form-actions">
           <button class="btn-primary" id="group-form-save">${isEdit ? '저장' : '추가'}</button>
@@ -485,17 +547,43 @@ const HskApp = (() => {
     host.querySelector('#group-form-save').addEventListener('click', async () => {
       const errorEl = host.querySelector('#group-form-error');
       const imageInput = host.querySelector('#group-image-input');
-      const data = {
+      const groupData = {
         part,
         range: host.querySelector('#group-range-input').value.trim(),
         passage: host.querySelector('#group-passage-input').value.trim(),
         image: imageInput ? imageInput.value.trim() : '',
       };
+
+      let questionData = null;
+      if (part === 2) {
+        const answerRadio = host.querySelector('input[name="group-q-answer"]:checked');
+        if (!answerRadio) {
+          errorEl.textContent = '정답을 선택해주세요';
+          return;
+        }
+        questionData = {
+          text: '',
+          optionA: host.querySelector('#group-q-opt-a').value.trim(),
+          optionB: host.querySelector('#group-q-opt-b').value.trim(),
+          optionC: host.querySelector('#group-q-opt-c').value.trim(),
+          optionD: host.querySelector('#group-q-opt-d').value.trim(),
+          answerIndex: Number(answerRadio.value),
+          explanation: host.querySelector('#group-q-explanation-input').value.trim(),
+        };
+      }
+
       try {
-        if (isEdit) {
-          await Api.hskUnits.updateGroup(unitId, group.id, data);
-        } else {
-          await Api.hskUnits.createGroup(unitId, data);
+        const savedGroup = isEdit
+          ? await Api.hskUnits.updateGroup(unitId, group.id, groupData)
+          : await Api.hskUnits.createGroup(unitId, groupData);
+
+        if (part === 2) {
+          questionData.no = parseRangeNumber(savedGroup.range);
+          if (existingQuestion) {
+            await Api.hskUnits.updateQuestion(unitId, savedGroup.id, existingQuestion.id, questionData);
+          } else {
+            await Api.hskUnits.createQuestion(unitId, savedGroup.id, questionData);
+          }
         }
       } catch (err) {
         errorEl.textContent = err.message || '저장에 실패했습니다';
