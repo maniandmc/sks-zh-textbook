@@ -7,7 +7,8 @@ HTML5 · CSS3 · Vanilla JavaScript 프론트엔드 + Cloudflare Pages Functions
 > **진행 상황**: 인증/클래스 API, 교재 CRUD·권한·복사·진도율·북마크 API, 그리고
 > 프론트엔드 연동(로그인 화면, 클래스 화면, 권한별 편집 UI)까지 전부 완료되었습니다.
 > 남은 건 실제 배포뿐입니다. 배포 방법은 `README-deploy.md`, API 명세는
-> `README-api.md`를 참고하세요.
+> `README-api.md`를 참고하세요. HSK 5급 독해 문제를 어떻게 입력하는지는
+> `README-hsk-content.md`를 참고하세요.
 
 ## 실행 방법 (로컬 개발)
 
