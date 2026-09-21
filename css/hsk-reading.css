@@ -2,6 +2,10 @@
    hsk-reading.css — HSK 5급 독해 A4 시험지 레이아웃
    실제 인쇄물과 같은 느낌을 내야 하므로 앱의 테마(다크모드/포인트
    컬러)는 가져오지 않고, 이 페이지 전용의 흑백 인쇄 톤을 사용한다.
+
+   로그인 화면은 css/style.css의 것을 그대로 재사용하므로, 종이
+   배경/명조체는 body가 아니라 #exam-root 안에만 적용한다 — 그래야
+   로그인 폼은 앱과 같은 산세리프로, 시험지는 명조체로 각각 보인다.
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
@@ -17,18 +21,6 @@
 }
 
 * { box-sizing: border-box; }
-
-html, body {
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background: var(--paper-backdrop);
-  color: var(--ink);
-  font-family: 'Noto Serif SC', 'Songti SC', 'PingFang SC', serif;
-  -webkit-font-smoothing: antialiased;
-}
 
 /* -------------------- 화면 미리보기용 툴바 (인쇄 시 숨김) -------------------- */
 
@@ -55,7 +47,12 @@ body {
 /* -------------------- A4 페이지 -------------------- */
 
 #exam-root {
+  min-height: 100vh;
   padding: 32px 0 60px;
+  background: var(--paper-backdrop);
+  color: var(--ink);
+  font-family: 'Noto Serif SC', 'Songti SC', 'PingFang SC', serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .exam-page {
@@ -225,7 +222,7 @@ strong { font-weight: 700; }
 @media print {
   @page { size: A4; margin: 0; }
 
-  body { background: var(--paper); }
+  #exam-root { background: var(--paper); }
   .hsk-toolbar { display: none; }
 
   #exam-root { padding: 0; }

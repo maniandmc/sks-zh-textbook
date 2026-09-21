@@ -1974,6 +1974,26 @@ body.edit-mode-on .inline-add-btn-row { display: flex; }
   cursor: not-allowed;
 }
 
+.login-home-link {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: var(--radius-s);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.login-home-link:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
 /* ---- 헤더: 로그인 사용자 정보 ---- */
 .header-user-info {
   font-size: 13px;

@@ -3,23 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HSK 5급 독해 - 레이아웃 프로토타입</title>
+<title>HSK 5급 독해</title>
+<link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/hsk-reading.css">
 </head>
 <body>
 
-  <div class="hsk-toolbar">
-    <button class="hsk-print-btn" id="hsk-print-btn">인쇄</button>
+  <!-- ===== 로그인 화면 (중국어 교재와 같은 계정을 사용) ===== -->
+  <div class="login-screen" id="login-screen">
+    <a class="login-home-link" href="index.html">← 홈으로</a>
+    <form class="login-card" id="login-form">
+      <div class="login-brand">
+        <div class="brand-mark zh">汉</div>
+        <span class="brand-name">SKS <span class="zh">中文学习馆</span></span>
+      </div>
+      <p class="login-brand-sub">HSK 5급 독해 연습</p>
+      <h1>로그인</h1>
+      <div class="login-field">
+        <label for="login-username">아이디</label>
+        <input type="text" id="login-username" autocomplete="username" required>
+      </div>
+      <div class="login-field">
+        <label for="login-password">비밀번호</label>
+        <input type="password" id="login-password" autocomplete="current-password" required>
+      </div>
+      <p class="login-error" id="login-error"></p>
+      <button type="submit" class="btn-primary login-submit" id="login-submit">로그인</button>
+    </form>
   </div>
 
-  <div id="exam-root"></div>
+  <!-- ===== HSK 독해 시험지 (로그인 후에만 표시) ===== -->
+  <div class="hsk-toolbar" id="hsk-toolbar" style="display:none;">
+    <button class="hsk-print-btn" id="hsk-print-btn">인쇄</button>
+  </div>
+  <div id="exam-root" style="display:none;"></div>
 
+  <script src="js/api.js"></script>
   <script src="js/hsk-reading-data.js"></script>
   <script src="js/hsk-reading.js"></script>
-  <script>
-    HskReading.render(document.getElementById('exam-root'), window.HSK_READING_DATA);
-    document.getElementById('hsk-print-btn').addEventListener('click', () => window.print());
-  </script>
+  <script src="js/hsk-reading-auth.js"></script>
 
 </body>
 </html>
