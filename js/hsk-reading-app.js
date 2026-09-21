@@ -263,9 +263,11 @@ const HskApp = (() => {
 
     showExamScreen();
     examNav().innerHTML = `
-      <button class="icon-text-btn" id="btn-back-to-units">← 단원 목록</button>
-      <span class="hsk-exam-nav-title">${escapeHTML(unit.title)}</span>
-      ${unit.canWrite ? `<button class="icon-text-btn" id="btn-edit-unit">편집</button>` : '<span></span>'}
+      <div class="hsk-exam-nav-inner">
+        <button class="icon-text-btn" id="btn-back-to-units">← 단원 목록</button>
+        <span class="hsk-exam-nav-title">${escapeHTML(unit.title)}</span>
+        ${unit.canWrite ? `<button class="icon-text-btn" id="btn-edit-unit">편집</button>` : '<span></span>'}
+      </div>
     `;
     document.getElementById('btn-back-to-units').addEventListener('click', () => showUnitList(currentClass));
     if (unit.canWrite) {
