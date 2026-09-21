@@ -123,18 +123,6 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.12);
 }
 
-.page-number {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 12mm;
-  text-align: center;
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 12.5px;
-  letter-spacing: 2px;
-  color: var(--ink-soft);
-}
-
 /* -------------------- 제목 / 지시문 -------------------- */
 
 .section-title {
@@ -343,7 +331,7 @@ strong { font-weight: 700; }
     min-height: auto;
     padding: 16px 16px 40px;
   }
-  .page-number { position: static; margin-top: 24px; }
   .passage-image { width: 34vw; }
   .hsk-exam-nav-inner { width: 100%; }
 }
+

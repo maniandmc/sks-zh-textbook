@@ -10,7 +10,6 @@
 const HskReading = (() => {
 
   const PART_TITLES = { 1: '第一部分', 2: '第二部分', 3: '第三部分' };
-  const BASE_PAGE_NUMBER = 120;
 
   // 보기 4개 중 하나라도 이 길이를 넘으면 4열 대신 2열로 줄바꿈한다.
   const OPTION_WRAP_THRESHOLD = 6;
@@ -156,7 +155,7 @@ const HskReading = (() => {
 
   /* ---------------- 페이지(부분) 단위 렌더링 ---------------- */
 
-  function renderPartPage(partData, pageNumber) {
+  function renderPartPage(partData) {
     const renderGroup = GROUP_RENDERERS[partData.part];
     const groupsHTML = partData.groups.map(renderGroup).join('');
 
@@ -166,7 +165,6 @@ const HskReading = (() => {
         <h2 class="part-title">${escapeHTML(PART_TITLES[partData.part] || '')}</h2>
         <p class="instruction">${formatInline(partData.instruction)}</p>
         ${groupsHTML}
-        <div class="page-number">- ${pageNumber} -</div>
       </section>
     `;
   }
@@ -204,7 +202,7 @@ const HskReading = (() => {
 
   function render(container, data) {
     container.innerHTML = data
-      .map((partData, i) => renderPartPage(partData, BASE_PAGE_NUMBER + i))
+      .map(partData => renderPartPage(partData))
       .join('');
     wireInteractivity(container);
   }
