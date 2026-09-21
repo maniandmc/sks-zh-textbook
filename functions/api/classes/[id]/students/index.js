@@ -1,7 +1,7 @@
-// functions/api/classes/[id]/students.js
+// functions/api/classes/[id]/students/index.js
 // GET /api/classes/:id/students → 해당 클래스의 학생 명단 (담당 교사만 조회 가능)
 
-import { requireTeacher, jsonResponse, errorResponse } from '../../../_lib/auth.js';
+import { requireTeacher, jsonResponse, errorResponse } from '../../../../_lib/auth.js';
 
 export async function onRequestGet(context) {
   const authResult = await requireTeacher(context);

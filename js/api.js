@@ -70,6 +70,7 @@ const Api = (() => {
       create: (name) => post('/api/classes', { name }),
       join: (joinCode) => post('/api/classes/join', { joinCode }),
       students: (classId) => get(`/api/classes/${classId}/students`),
+      removeStudent: (classId, studentId) => del(`/api/classes/${classId}/students/${studentId}`),
     },
 
     hskUnits: {

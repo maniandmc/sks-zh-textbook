@@ -251,8 +251,15 @@ const Classes = (() => {
     }
 
     rosterEl.classList.add('show');
-    rosterEl.innerHTML = `<p class="admin-empty-row">불러오는 중...</p>`;
     btn.textContent = '명단 닫기';
+    await loadRoster(classId);
+  }
+
+  async function loadRoster(classId) {
+    const rosterEl = document.getElementById(`roster-${classId}`);
+    if (!rosterEl) return;
+
+    rosterEl.innerHTML = `<p class="admin-empty-row">불러오는 중...</p>`;
 
     try {
       const { students } = await Api.classes.students(classId);
@@ -262,11 +269,43 @@ const Classes = (() => {
               <div class="admin-row-main">
                 <p class="admin-row-zh">${App.escapeHTML(s.display_name)} <span class="admin-row-sub" style="display:inline;">@${App.escapeHTML(s.username)}</span></p>
               </div>
+              <div class="admin-row-actions">
+                <button class="icon-text-btn danger" data-action="remove-from-class" data-student-id="${s.id}" data-student-name="${App.escapeHTML(s.display_name)}">클래스에서 제거</button>
+              </div>
             </div>
           `).join('')}</div>`
         : emptyRow('아직 가입한 학생이 없습니다');
+
+      rosterEl.querySelectorAll('[data-action="remove-from-class"]').forEach(removeBtn => {
+        removeBtn.addEventListener('click', () => removeStudentFromClass(
+          classId,
+          Number(removeBtn.dataset.studentId),
+          removeBtn.dataset.studentName,
+        ));
+      });
     } catch (e) {
       rosterEl.innerHTML = `<p class="admin-empty-row">${App.escapeHTML(e.message)}</p>`;
+    }
+  }
+
+  async function removeStudentFromClass(classId, studentId, studentName) {
+    if (!confirm(`"${studentName}" 학생을 이 클래스에서 제거하시겠습니까?`)) return;
+
+    try {
+      await Api.classes.removeStudent(classId, studentId);
+      App.showToast(`"${studentName}" 학생을 클래스에서 제거했습니다`);
+    } catch (e) {
+      App.showToast(e.message);
+      return;
+    }
+
+    await loadRoster(classId);
+
+    const card = document.getElementById(`roster-${classId}`)?.closest('.class-card');
+    const countEl = card ? card.querySelector('.admin-row-sub') : null;
+    if (countEl) {
+      const current = Number(countEl.textContent.replace(/[^0-9]/g, '')) || 0;
+      countEl.textContent = `학생 ${Math.max(0, current - 1)}명`;
     }
   }
 
