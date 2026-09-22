@@ -9,7 +9,7 @@
     "db:migrate:local": "wrangler d1 execute chinese-textbook-db --local --file=migrations/0001_init.sql && wrangler d1 execute chinese-textbook-db --local --file=migrations/0002_lessons.sql && wrangler d1 execute chinese-textbook-db --local --file=migrations/0003_hsk_units.sql && wrangler d1 execute chinese-textbook-db --local --file=migrations/0004_hsk_answer.sql && wrangler d1 execute chinese-textbook-db --local --file=migrations/0005_hsk_explanation.sql && wrangler d1 execute chinese-textbook-db --local --file=migrations/0006_announcements.sql",
     "db:migrate:remote": "wrangler d1 execute chinese-textbook-db --remote --file=migrations/0001_init.sql && wrangler d1 execute chinese-textbook-db --remote --file=migrations/0002_lessons.sql && wrangler d1 execute chinese-textbook-db --remote --file=migrations/0003_hsk_units.sql && wrangler d1 execute chinese-textbook-db --remote --file=migrations/0004_hsk_answer.sql && wrangler d1 execute chinese-textbook-db --remote --file=migrations/0005_hsk_explanation.sql && wrangler d1 execute chinese-textbook-db --remote --file=migrations/0006_announcements.sql",
     "hash-password": "node scripts/hash-password.js",
-    "test": "node --test scripts/test-parse-pasted-table.js"
+    "test": "node --test scripts/test-parse-pasted-table.js scripts/test-parse-pasted-quiz.js"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"
