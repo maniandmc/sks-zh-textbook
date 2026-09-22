@@ -17,6 +17,25 @@ const EditorForms = (() => {
     }
   }
 
+  // 단원 번호(第一课, 第十二课 ...)는 사용자가 직접 입력하지 않고, 같은 소유자(클래스/개인)
+  // 안에 이미 있는 단원 수를 세어 자동으로 매긴다.
+  const CHINESE_DIGITS = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  function toChineseNumeral(n) {
+    if (n <= 10) return n === 10 ? '十' : CHINESE_DIGITS[n];
+    if (n < 20) return '十' + CHINESE_DIGITS[n % 10];
+    if (n < 100) {
+      const tens = Math.floor(n / 10);
+      const ones = n % 10;
+      return CHINESE_DIGITS[tens] + '十' + (ones ? CHINESE_DIGITS[ones] : '');
+    }
+    return String(n);
+  }
+  function nextLessonLabel(meta, ownerType, ownerId) {
+    const group = meta.groups.find(g => g.ownerType === ownerType && g.ownerId === ownerId);
+    const count = group ? group.lessons.length : 0;
+    return `第${toChineseNumeral(count + 1)}课`;
+  }
+
   /* ---------------- 문장 폼 ---------------- */
 
   function renderSentenceForm(hostEl, lessonId, sentence, onDone) {
@@ -461,10 +480,6 @@ const EditorForms = (() => {
           </div>
         ` : ''}
         <div class="admin-field">
-          <label>단원 번호 (예: 第一课)</label>
-          <input type="text" id="ef-l-title" value="${lesson ? App.escapeHTML(lesson.title) : ''}" placeholder="第四课">
-        </div>
-        <div class="admin-field">
           <label>중국어 제목</label>
           <input type="text" id="ef-l-chinese" class="zh" value="${lesson ? App.escapeHTML(lesson.chineseTitle) : ''}" placeholder="中国的节日">
         </div>
@@ -485,11 +500,10 @@ const EditorForms = (() => {
 
     hostEl.querySelector('#ef-l-cancel').addEventListener('click', () => { hostEl.innerHTML = ''; if (onDone) onDone(true); });
     hostEl.querySelector('#ef-l-save').addEventListener('click', async () => {
-      const title = hostEl.querySelector('#ef-l-title').value.trim();
       const chineseTitle = hostEl.querySelector('#ef-l-chinese').value.trim();
       const koreanTitle = hostEl.querySelector('#ef-l-korean').value.trim();
 
-      if (!title || !chineseTitle || !koreanTitle) {
+      if (!chineseTitle || !koreanTitle) {
         App.showToast('모든 항목을 입력해주세요');
         return;
       }
@@ -497,7 +511,7 @@ const EditorForms = (() => {
       let newId = null;
       try {
         if (lesson) {
-          await App.updateLessonMeta(lesson.id, { title, chineseTitle, koreanTitle });
+          await App.updateLessonMeta(lesson.id, { title: lesson.title, chineseTitle, koreanTitle });
           App.showToast('단원 정보를 수정했습니다');
         } else if (showClassSelect) {
           const select = hostEl.querySelector('#ef-l-class');
@@ -505,9 +519,14 @@ const EditorForms = (() => {
             App.showToast('먼저 클래스를 만들어야 단원을 추가할 수 있습니다');
             return;
           }
-          newId = await App.addLesson({ title, chineseTitle, koreanTitle, ownerType: 'class', ownerId: Number(select.value) });
+          const ownerId = Number(select.value);
+          const meta = await App.getLessonsMeta();
+          const title = nextLessonLabel(meta, 'class', ownerId);
+          newId = await App.addLesson({ title, chineseTitle, koreanTitle, ownerType: 'class', ownerId });
           App.showToast('새 단원을 추가했습니다');
         } else {
+          const meta = await App.getLessonsMeta();
+          const title = nextLessonLabel(meta, 'student', user.id);
           newId = await App.addLesson({ title, chineseTitle, koreanTitle, ownerType: 'student', ownerId: user.id });
           App.showToast('새 단원을 추가했습니다');
         }
