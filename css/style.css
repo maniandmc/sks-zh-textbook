@@ -1902,6 +1902,15 @@ body.edit-mode-on .inline-add-btn-row { display: flex; }
   .landing-cards { grid-template-columns: 1fr; }
 }
 
+.landing-announcements {
+  text-align: left;
+  margin-top: 40px;
+}
+.landing-announcements .announcements-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin-bottom: 0;
+}
+
 /* ============================================================
    로그인 화면
    ============================================================ */

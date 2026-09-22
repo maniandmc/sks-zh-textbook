@@ -1,9 +1,11 @@
 // functions/api/announcements/index.js
 //
-// GET  /api/announcements   → 전역 공지사항/업데이트 소식 목록 (로그인만 하면 누구나 조회)
+// GET  /api/announcements   → 전역 공지사항/업데이트 소식 목록
+//   로그인 여부와 무관하게 누구나 조회 가능 — index.html(로그인 전 첫 화면)에서도
+//   그대로 보여주기 위함. 민감한 정보가 아니므로 공개해도 문제 없다.
 // POST /api/announcements { category, title, content } → 새 글 작성 (교사 전용)
 
-import { requireAnyUser, requireTeacher, jsonResponse, errorResponse } from '../../_lib/auth.js';
+import { requireTeacher, jsonResponse, errorResponse } from '../../_lib/auth.js';
 
 const CATEGORIES = ['notice', 'update'];
 
@@ -27,8 +29,6 @@ function validateBody(body) {
 }
 
 export async function onRequestGet(context) {
-  const authResult = await requireAnyUser(context);
-  if (authResult instanceof Response) return authResult;
   const db = context.env.DB;
 
   const { results } = await db.prepare(
