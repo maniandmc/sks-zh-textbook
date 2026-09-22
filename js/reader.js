@@ -23,9 +23,14 @@ const Reader = (() => {
     container.innerHTML = `
       <div class="content-inner">
         <div class="reader-header">
-          <p class="rh-label zh">${currentLesson.title}</p>
-          <h2 class="zh">${currentLesson.chineseTitle}</h2>
-          <p class="rh-korean">${currentLesson.koreanTitle}</p>
+          <div class="reader-header-top">
+            <div>
+              <p class="rh-label zh">${currentLesson.title}</p>
+              <h2 class="zh">${currentLesson.chineseTitle}</h2>
+              <p class="rh-korean">${currentLesson.koreanTitle}</p>
+            </div>
+            ${currentLesson.canWrite ? `<button class="icon-text-btn" id="btn-goto-admin">편집하기</button>` : ''}
+          </div>
         </div>
 
         <div class="tab-row">
@@ -48,6 +53,11 @@ const Reader = (() => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
+    const gotoAdminBtn = container.querySelector('#btn-goto-admin');
+    if (gotoAdminBtn) {
+      gotoAdminBtn.addEventListener('click', () => App.navigate('admin', { lessonId: currentLesson.id }));
+    }
+
     renderTabContent(tab);
   }
 
@@ -68,24 +78,12 @@ const Reader = (() => {
     else if (tab === 'quiz') renderQuizTab();
   }
 
-  /* 편집 모드 배너: 쓰기 권한이 있으면 편집 안내, 없으면(전역 편집 모드가 켜져 있을 때만) 읽기 전용 안내 */
-  function renderEditBanner(canWrite, message) {
-    if (canWrite) {
-      return `<div class="inline-edit-banner">${App.ICONS.edit} 편집 모드입니다. ${message}</div>`;
-    }
-    if (App.getEditMode()) {
-      return `<div class="inline-edit-banner readonly">${App.ICONS.lock} 이 교재는 읽기 전용이라 편집할 수 없습니다.</div>`;
-    }
-    return '';
-  }
-
   /* ================= 본문 탭 ================= */
 
   function renderTextTab() {
     const el = document.getElementById('tab-text');
     const toggles = App.getDisplayToggles();
     const bookmarks = App.getBookmarks();
-    const canWrite = currentLesson.canWrite;
 
     // 문장별 상세 패널은 DOM에 새로 만들어 붙이는 방식이라 전체 다시 그리기 시 함께 사라진다.
     // 선택 상태만 남아 있으면 같은 문장을 다시 클릭했을 때 접힘으로 오인해 아무 반응이 없으므로 여기서 같이 초기화한다.
@@ -95,12 +93,6 @@ const Reader = (() => {
       const isBookmarked = bookmarks.sentences.includes(s.id);
       return `
         <div class="sentence-block ${isBookmarked ? 'bookmarked' : ''}" data-sentence-id="${s.id}">
-          ${canWrite ? `
-            <div class="inline-edit-controls">
-              <button class="inline-edit-btn" data-edit-sentence="${s.id}" title="수정" aria-label="문장 수정">${App.ICONS.edit}</button>
-              <button class="inline-edit-btn danger" data-delete-sentence="${s.id}" title="삭제" aria-label="문장 삭제">${App.ICONS.trash}</button>
-            </div>
-          ` : ''}
           <div class="sb-chinese zh">${s.chinese}</div>
           <div class="sb-pinyin ${toggles.pinyin ? 'show' : ''}">${s.pinyin}</div>
           <div class="sb-translation ${toggles.translation ? 'show' : ''}">${s.translation}</div>
@@ -109,15 +101,12 @@ const Reader = (() => {
     }).join('');
 
     el.innerHTML = `
-      ${renderEditBanner(canWrite, '문장에 마우스를 올리면 수정·삭제 버튼이 나타납니다.')}
       <div class="reader-toolbar">
         <button class="toggle-chip ${toggles.pinyin ? 'active' : ''}" id="toggle-pinyin">拼音</button>
         <button class="toggle-chip ${toggles.translation ? 'active' : ''}" id="toggle-translation">번역</button>
         <button class="toggle-chip" id="btn-read-all">${App.ICONS.volume} 전체 듣기</button>
       </div>
       <div class="passage">${sentencesHTML}</div>
-      ${canWrite ? `<button class="btn-primary inline-add-btn" id="btn-add-sentence">${App.ICONS.plus} 문장 추가</button>` : ''}
-      <div id="sentence-edit-form-host"></div>
     `;
 
     el.querySelector('#toggle-pinyin').addEventListener('click', () => {
@@ -138,45 +127,6 @@ const Reader = (() => {
     el.querySelectorAll('.sentence-block').forEach(block => {
       block.addEventListener('click', () => selectSentence(Number(block.dataset.sentenceId)));
     });
-
-    el.querySelectorAll('[data-edit-sentence]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const sentence = currentLesson.sentences.find(s => s.id === Number(btn.dataset.editSentence));
-        const formHost = document.getElementById('sentence-edit-form-host');
-        EditorForms.renderSentenceForm(formHost, currentLesson.id, sentence, async () => {
-          App.invalidateCache();
-          currentLesson = await App.getLesson(currentLesson.id);
-          renderTextTab();
-        });
-      });
-    });
-
-    el.querySelectorAll('[data-delete-sentence]').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        if (!confirm('이 문장을 삭제하시겠습니까?')) return;
-        try {
-          await App.deleteSentence(currentLesson.id, Number(btn.dataset.deleteSentence));
-        } catch (err) { return; }
-        App.invalidateCache();
-        currentLesson = await App.getLesson(currentLesson.id);
-        App.showToast('문장을 삭제했습니다');
-        renderTextTab();
-      });
-    });
-
-    const addSentenceBtn = el.querySelector('#btn-add-sentence');
-    if (addSentenceBtn) {
-      addSentenceBtn.addEventListener('click', () => {
-        const formHost = document.getElementById('sentence-edit-form-host');
-        EditorForms.renderSentenceForm(formHost, currentLesson.id, null, async () => {
-          App.invalidateCache();
-          currentLesson = await App.getLesson(currentLesson.id);
-          renderTextTab();
-        });
-      });
-    }
 
     // 본문을 한 번이라도 열람하면 진행률 '완료' 처리
     App.setLessonProgressField(currentLesson.id, 'text', true);
@@ -258,15 +208,8 @@ const Reader = (() => {
 
   function renderGrammarTab() {
     const el = document.getElementById('tab-grammar');
-    const canWrite = currentLesson.canWrite;
     const cards = currentLesson.grammar.map(g => `
       <div class="grammar-card" data-grammar-id="${g.id}">
-        ${canWrite ? `
-          <div class="inline-edit-controls">
-            <button class="inline-edit-btn" data-edit-grammar="${g.id}" title="수정" aria-label="문법 수정">${App.ICONS.edit}</button>
-            <button class="inline-edit-btn danger" data-delete-grammar="${g.id}" title="삭제" aria-label="문법 삭제">${App.ICONS.trash}</button>
-          </div>
-        ` : ''}
         <p class="gc-number">${g.number}</p>
         <p class="gc-title">${g.title}</p>
         <p class="gc-desc">${g.description}</p>
@@ -277,47 +220,7 @@ const Reader = (() => {
       </div>
     `).join('');
 
-    el.innerHTML = `
-      ${renderEditBanner(canWrite, '문법 카드에 마우스를 올리면 수정·삭제 버튼이 나타납니다.')}
-      <div class="grammar-list">${cards}</div>
-      ${canWrite ? `<button class="btn-primary inline-add-btn" id="btn-add-grammar">${App.ICONS.plus} 문법 추가</button>` : ''}
-      <div id="grammar-edit-form-host"></div>
-    `;
-
-    el.querySelectorAll('[data-edit-grammar]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const grammar = currentLesson.grammar.find(g => g.id === Number(btn.dataset.editGrammar));
-        EditorForms.renderGrammarForm(document.getElementById('grammar-edit-form-host'), currentLesson.id, grammar, async () => {
-          App.invalidateCache();
-          currentLesson = await App.getLesson(currentLesson.id);
-          renderGrammarTab();
-        });
-      });
-    });
-
-    el.querySelectorAll('[data-delete-grammar]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!confirm('이 문법 항목을 삭제하시겠습니까?')) return;
-        try {
-          await App.deleteGrammar(currentLesson.id, Number(btn.dataset.deleteGrammar));
-        } catch (err) { return; }
-        App.invalidateCache();
-        currentLesson = await App.getLesson(currentLesson.id);
-        App.showToast('문법 항목을 삭제했습니다');
-        renderGrammarTab();
-      });
-    });
-
-    const addGrammarBtn = el.querySelector('#btn-add-grammar');
-    if (addGrammarBtn) {
-      addGrammarBtn.addEventListener('click', () => {
-        EditorForms.renderGrammarForm(document.getElementById('grammar-edit-form-host'), currentLesson.id, null, async () => {
-          App.invalidateCache();
-          currentLesson = await App.getLesson(currentLesson.id);
-          renderGrammarTab();
-        });
-      });
-    }
+    el.innerHTML = `<div class="grammar-list">${cards}</div>`;
 
     App.setLessonProgressField(currentLesson.id, 'grammar', true);
     App.renderInfoPanel(currentLesson);
@@ -328,15 +231,8 @@ const Reader = (() => {
 
   function renderQuizTab() {
     const el = document.getElementById('tab-quiz');
-    const canWrite = currentLesson.canWrite;
     const cards = currentLesson.quiz.map((q, i) => `
       <div class="quiz-card" data-quiz-id="${q.id}">
-        ${canWrite ? `
-          <div class="inline-edit-controls">
-            <button class="inline-edit-btn" data-edit-quiz="${q.id}" title="수정" aria-label="문제 수정">${App.ICONS.edit}</button>
-            <button class="inline-edit-btn danger" data-delete-quiz="${q.id}" title="삭제" aria-label="문제 삭제">${App.ICONS.trash}</button>
-          </div>
-        ` : ''}
         <p class="qc-label">QUIZ ${String(i + 1).padStart(2, '0')}</p>
         <p class="qc-question">${q.question}</p>
         <div class="quiz-options">
@@ -352,12 +248,7 @@ const Reader = (() => {
       </div>
     `).join('');
 
-    el.innerHTML = `
-      ${renderEditBanner(canWrite, '문제 카드에 마우스를 올리면 수정·삭제 버튼이 나타납니다.')}
-      <div class="quiz-list">${cards}</div>
-      ${canWrite ? `<button class="btn-primary inline-add-btn" id="btn-add-quiz">${App.ICONS.plus} 문제 추가</button>` : ''}
-      <div id="quiz-edit-form-host"></div>
-    `;
+    el.innerHTML = `<div class="quiz-list">${cards}</div>`;
 
     el.querySelectorAll('.quiz-card').forEach((card, qi) => {
       const quiz = currentLesson.quiz[qi];
@@ -392,43 +283,7 @@ const Reader = (() => {
 
         checkAllQuizCompleted();
       });
-
-      const editBtn = card.querySelector(`[data-edit-quiz="${quiz.id}"]`);
-      if (editBtn) {
-        editBtn.addEventListener('click', () => {
-          EditorForms.renderQuizForm(document.getElementById('quiz-edit-form-host'), currentLesson.id, quiz, async () => {
-            App.invalidateCache();
-            currentLesson = await App.getLesson(currentLesson.id);
-            renderQuizTab();
-          });
-        });
-      }
-
-      const deleteBtn = card.querySelector(`[data-delete-quiz="${quiz.id}"]`);
-      if (deleteBtn) {
-        deleteBtn.addEventListener('click', async () => {
-          if (!confirm('이 문제를 삭제하시겠습니까?')) return;
-          try {
-            await App.deleteQuiz(currentLesson.id, quiz.id);
-          } catch (err) { return; }
-          App.invalidateCache();
-          currentLesson = await App.getLesson(currentLesson.id);
-          App.showToast('문제를 삭제했습니다');
-          renderQuizTab();
-        });
-      }
     });
-
-    const addQuizBtn = el.querySelector('#btn-add-quiz');
-    if (addQuizBtn) {
-      addQuizBtn.addEventListener('click', () => {
-        EditorForms.renderQuizForm(document.getElementById('quiz-edit-form-host'), currentLesson.id, null, async () => {
-          App.invalidateCache();
-          currentLesson = await App.getLesson(currentLesson.id);
-          renderQuizTab();
-        });
-      });
-    }
 
     checkAllQuizCompleted(true);
   }

@@ -676,6 +676,12 @@ input {
 .reader-header {
   margin-bottom: 4px;
 }
+.reader-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
 .reader-header .rh-label {
   font-family: var(--font-zh);
   font-size: 14px;
@@ -1635,117 +1641,6 @@ input {
   }
   .admin-field-row {
     grid-template-columns: 1fr;
-  }
-}
-
-/* ============================================================
-   학습 화면 인라인 편집 모드
-   ============================================================ */
-
-#edit-mode-toggle-btn.active {
-  background: var(--color-accent-soft);
-  color: var(--color-accent-strong);
-}
-
-/* 편집 모드가 꺼져 있을 때는 인라인 편집 컨트롤을 숨김 */
-.inline-edit-controls { display: none; }
-body.edit-mode-on .inline-edit-controls { display: flex; }
-
-.inline-edit-banner {
-  display: none;
-  align-items: center;
-  gap: 8px;
-  background: var(--color-accent-soft);
-  border: 1px solid var(--color-accent-soft-border);
-  color: var(--color-accent-strong);
-  border-radius: var(--radius-m);
-  padding: 10px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 18px;
-}
-body.edit-mode-on .inline-edit-banner { display: flex; }
-.inline-edit-banner svg { width: 15px; height: 15px; flex-shrink: 0; }
-.inline-edit-banner.readonly {
-  display: flex;
-  background: var(--color-bg);
-  border-color: var(--color-border-strong);
-  color: var(--color-text-secondary);
-}
-
-.sentence-block {
-  position: relative;
-}
-.sentence-block .inline-edit-controls {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  gap: 4px;
-}
-.inline-edit-btn {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-s);
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-secondary);
-  flex-shrink: 0;
-}
-.inline-edit-btn:hover { background: var(--color-bg); color: var(--color-text); }
-.inline-edit-btn.danger:hover { color: var(--color-error); border-color: var(--color-error-soft); background: var(--color-error-soft); }
-.inline-edit-btn svg { width: 14px; height: 14px; }
-
-.inline-add-btn {
-  display: none;
-  align-items: center;
-  gap: 6px;
-  margin-top: 10px;
-}
-body.edit-mode-on .inline-add-btn { display: inline-flex; }
-.inline-add-btn svg { width: 15px; height: 15px; }
-
-.inline-add-btn-row {
-  display: none;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 10px;
-}
-body.edit-mode-on .inline-add-btn-row { display: flex; }
-.inline-add-btn-row .inline-add-btn { margin-top: 0; }
-
-.vocab-card, .vocab-table tbody tr {
-  position: relative;
-}
-.vocab-card .inline-edit-controls {
-  flex-shrink: 0;
-  gap: 4px;
-  margin-left: 8px;
-}
-.vt-row-edit-cell {
-  width: 1%;
-  white-space: nowrap;
-}
-
-.grammar-card, .quiz-card {
-  position: relative;
-}
-.grammar-card .inline-edit-controls,
-.quiz-card .inline-edit-controls {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  gap: 4px;
-}
-
-@media (max-width: 760px) {
-  .sentence-block .inline-edit-controls,
-  .grammar-card .inline-edit-controls,
-  .quiz-card .inline-edit-controls {
-    position: static;
-    margin-top: 10px;
   }
 }
 

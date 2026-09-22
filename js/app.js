@@ -25,7 +25,6 @@ const App = (() => {
   const STORAGE_KEYS = {
     theme: 'ctb_theme_v1',
     toggles: 'ctb_toggles_v1',
-    editMode: 'ctb_edit_mode_v1',
   };
 
   /* ---------------- API 에러 → 토스트 공통화 ---------------- */
@@ -352,42 +351,6 @@ const App = (() => {
     const t = getDisplayToggles();
     t[key] = value;
     writeStore(STORAGE_KEYS.toggles, t);
-  }
-
-  /* ---------------- 편집 모드 (학습 화면 인라인 편집) ---------------- */
-
-  function getEditMode() {
-    return readStore(STORAGE_KEYS.editMode, false);
-  }
-
-  function setEditMode(value) {
-    writeStore(STORAGE_KEYS.editMode, value);
-    updateEditModeButton();
-    document.body.classList.toggle('edit-mode-on', value);
-    rerenderCurrentView();
-  }
-
-  function toggleEditMode() {
-    setEditMode(!getEditMode());
-    showToast(getEditMode() ? '편집 모드를 켰습니다' : '편집 모드를 껐습니다');
-  }
-
-  function updateEditModeButton() {
-    const btn = document.getElementById('edit-mode-toggle-btn');
-    if (!btn) return;
-    const on = getEditMode();
-    btn.classList.toggle('active', on);
-    btn.innerHTML = ICONS.edit;
-    btn.setAttribute('aria-label', on ? '편집 모드 끄기' : '편집 모드 켜기');
-  }
-
-  async function rerenderCurrentView() {
-    const opts = {};
-    if (state.currentLessonId) {
-      opts.lessonId = state.currentLessonId;
-      opts.tab = state.currentTab;
-    }
-    await navigate(state.currentView, opts);
   }
 
   /* ---------------- 아이콘 (인라인 SVG, stroke 기반) ---------------- */
@@ -756,8 +719,6 @@ const App = (() => {
 
     hideLoginScreen();
     renderHeaderUser();
-    document.body.classList.toggle('edit-mode-on', getEditMode());
-    updateEditModeButton();
 
     const adminNavItem = document.querySelector('.nav-item[data-view="admin"]');
     if (adminNavItem) {
@@ -834,7 +795,6 @@ const App = (() => {
     initTheme();
 
     document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
-    document.getElementById('edit-mode-toggle-btn').addEventListener('click', toggleEditMode);
     document.getElementById('hamburger-btn').addEventListener('click', openSidebar);
     document.getElementById('sidebar-backdrop').addEventListener('click', closeSidebar);
     document.getElementById('search-overlay-close').addEventListener('click', closeSearchOverlay);
@@ -873,7 +833,6 @@ const App = (() => {
     getLastLessonId, setLastLessonId,
     getBookmarks, getBookmarkedItems, toggleBookmark, isBookmarked,
     getDisplayToggles, setDisplayToggle,
-    getEditMode, setEditMode, toggleEditMode,
     getCurrentUser,
     showToast, speak, ICONS, escapeHTML,
     renderSidebarLessonList, renderInfoPanel,

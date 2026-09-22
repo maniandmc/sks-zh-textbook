@@ -13,32 +13,19 @@ const Vocabulary = (() => {
 
   function renderLessonVocab(container, lesson) {
     currentLessonRef = lesson;
-    const canWrite = lesson.canWrite;
-
-    const banner = canWrite
-      ? `<div class="inline-edit-banner">${App.ICONS.edit} 편집 모드입니다. 단어 행에 마우스를 올리면 수정·삭제 버튼이 나타납니다.</div>`
-      : (App.getEditMode() ? `<div class="inline-edit-banner readonly">${App.ICONS.lock} 이 교재는 읽기 전용이라 편집할 수 없습니다.</div>` : '');
 
     container.innerHTML = `
-      ${banner}
       <div class="vocab-search">
         ${App.ICONS.search}
         <input type="text" id="lesson-vocab-search" placeholder="단어, 병음, 뜻으로 검색">
       </div>
       <table class="vocab-table" id="lesson-vocab-table">
         <thead>
-          <tr><th>단어</th><th>병음</th><th>품사</th><th>뜻</th><th class="inline-edit-controls-th"></th></tr>
+          <tr><th>단어</th><th>병음</th><th>품사</th><th>뜻</th></tr>
         </thead>
         <tbody></tbody>
       </table>
       <div class="vocab-cards" id="lesson-vocab-cards"></div>
-      ${canWrite ? `
-        <div class="inline-add-btn-row">
-          <button class="btn-primary inline-add-btn" id="btn-add-vocab">${App.ICONS.plus} 단어 추가</button>
-          <button class="btn-secondary inline-add-btn" id="btn-paste-import-vocab">${App.ICONS.plus} 표 붙여넣기로 일괄 추가</button>
-        </div>
-      ` : ''}
-      <div id="vocab-edit-form-host"></div>
     `;
 
     renderVocabList(lesson.vocabulary);
@@ -53,33 +40,6 @@ const Vocabulary = (() => {
       );
       renderVocabList(filtered);
     });
-
-    const addVocabBtn = container.querySelector('#btn-add-vocab');
-    if (addVocabBtn) {
-      addVocabBtn.addEventListener('click', () => {
-        EditorForms.renderVocabForm(document.getElementById('vocab-edit-form-host'), lesson.id, null, async () => {
-          App.invalidateCache();
-          const refreshed = await App.getLesson(lesson.id);
-          currentLessonRef = refreshed;
-          renderVocabList(refreshed.vocabulary);
-          App.renderInfoPanel(refreshed);
-        });
-      });
-    }
-
-    const pasteImportBtn = container.querySelector('#btn-paste-import-vocab');
-    if (pasteImportBtn) {
-      pasteImportBtn.addEventListener('click', () => {
-        const existingWords = currentLessonRef.vocabulary.map(v => v.word);
-        VocabPasteImport.open(lesson.id, existingWords, async () => {
-          App.invalidateCache();
-          const refreshed = await App.getLesson(lesson.id);
-          currentLessonRef = refreshed;
-          renderVocabList(refreshed.vocabulary);
-          App.renderInfoPanel(refreshed);
-        });
-      });
-    }
 
     App.setLessonProgressField(lesson.id, 'vocab', true);
     App.renderInfoPanel(lesson);
@@ -99,22 +59,12 @@ const Vocabulary = (() => {
       return;
     }
 
-    const canWrite = currentLessonRef.canWrite;
-
     tbody.innerHTML = list.map(v => `
       <tr data-id="${v.id}">
         <td class="vt-word zh">${v.word}</td>
         <td>${v.pinyin}</td>
         <td class="vt-pos">${v.partOfSpeech}</td>
         <td>${v.meaning}</td>
-        <td class="vt-row-edit-cell">
-          ${canWrite ? `
-            <div class="inline-edit-controls">
-              <button class="inline-edit-btn" data-edit-id="${v.id}" title="수정" aria-label="단어 수정">${App.ICONS.edit}</button>
-              <button class="inline-edit-btn danger" data-delete-id="${v.id}" title="삭제" aria-label="단어 삭제">${App.ICONS.trash}</button>
-            </div>
-          ` : ''}
-        </td>
       </tr>
     `).join('');
 
@@ -128,90 +78,14 @@ const Vocabulary = (() => {
           ${v.meaning}
           <span class="vc-pos">${v.partOfSpeech}</span>
         </div>
-        ${canWrite ? `
-          <div class="inline-edit-controls">
-            <button class="inline-edit-btn" data-edit-id="${v.id}" title="수정" aria-label="단어 수정">${App.ICONS.edit}</button>
-            <button class="inline-edit-btn danger" data-delete-id="${v.id}" title="삭제" aria-label="단어 삭제">${App.ICONS.trash}</button>
-          </div>
-        ` : ''}
       </div>
     `).join('');
 
     tbody.querySelectorAll('tr[data-id]').forEach(row => {
-      row.addEventListener('click', (e) => {
-        if (e.target.closest('.inline-edit-btn')) return;
-        showWordDetail(Number(row.dataset.id));
-      });
+      row.addEventListener('click', () => showWordDetail(Number(row.dataset.id)));
     });
     cardsEl.querySelectorAll('.vocab-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.inline-edit-btn')) return;
-        showWordDetail(Number(card.dataset.id));
-      });
-    });
-
-    tbody.querySelectorAll('[data-edit-id]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = Number(btn.dataset.editId);
-        const v = currentLessonRef.vocabulary.find(item => item.id === id);
-        EditorForms.renderVocabForm(document.getElementById('vocab-edit-form-host'), currentLessonRef.id, v, async () => {
-          App.invalidateCache();
-          const refreshed = await App.getLesson(currentLessonRef.id);
-          currentLessonRef = refreshed;
-          renderVocabList(refreshed.vocabulary);
-          App.renderInfoPanel(refreshed);
-        });
-      });
-    });
-    cardsEl.querySelectorAll('[data-edit-id]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = Number(btn.dataset.editId);
-        const v = currentLessonRef.vocabulary.find(item => item.id === id);
-        EditorForms.renderVocabForm(document.getElementById('vocab-edit-form-host'), currentLessonRef.id, v, async () => {
-          App.invalidateCache();
-          const refreshed = await App.getLesson(currentLessonRef.id);
-          currentLessonRef = refreshed;
-          renderVocabList(refreshed.vocabulary);
-          App.renderInfoPanel(refreshed);
-        });
-      });
-    });
-
-    tbody.querySelectorAll('[data-delete-id]').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const id = Number(btn.dataset.deleteId);
-        const v = currentLessonRef.vocabulary.find(item => item.id === id);
-        if (!confirm(`"${v.word}" 단어를 삭제하시겠습니까?`)) return;
-        try {
-          await App.deleteVocabWord(currentLessonRef.id, id);
-        } catch (err) { return; }
-        App.invalidateCache();
-        const refreshed = await App.getLesson(currentLessonRef.id);
-        currentLessonRef = refreshed;
-        App.showToast('단어를 삭제했습니다');
-        renderVocabList(refreshed.vocabulary);
-        App.renderInfoPanel(refreshed);
-      });
-    });
-    cardsEl.querySelectorAll('[data-delete-id]').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const id = Number(btn.dataset.deleteId);
-        const v = currentLessonRef.vocabulary.find(item => item.id === id);
-        if (!confirm(`"${v.word}" 단어를 삭제하시겠습니까?`)) return;
-        try {
-          await App.deleteVocabWord(currentLessonRef.id, id);
-        } catch (err) { return; }
-        App.invalidateCache();
-        const refreshed = await App.getLesson(currentLessonRef.id);
-        currentLessonRef = refreshed;
-        App.showToast('단어를 삭제했습니다');
-        renderVocabList(refreshed.vocabulary);
-        App.renderInfoPanel(refreshed);
-      });
+      card.addEventListener('click', () => showWordDetail(Number(card.dataset.id)));
     });
   }
 
