@@ -387,7 +387,7 @@ const Reader = (() => {
         checkBtn.disabled = true;
         resultEl.classList.add('show', isCorrect ? 'correct' : 'wrong');
         resultEl.innerHTML = isCorrect
-          ? '✓ 정답입니다!'
+          ? `✓ 정답입니다!<span class="qr-hint">${quiz.explanation}</span>`
           : `✕ 다시 생각해 보세요.<span class="qr-hint">${quiz.explanation}</span>`;
 
         checkAllQuizCompleted();
