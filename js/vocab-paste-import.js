@@ -58,6 +58,94 @@ const VocabPasteImport = (() => {
     if (e.key === 'Escape') close();
   }
 
+  /* ---------------- 가이드 모달 ---------------- */
+
+  const VOCAB_PASTE_AI_PROMPT = `너는 지금부터 중국어 지문(또는 단어 목록)에서 학습할 만한 단어를 뽑아,
+우리 학습 사이트의 "단어 표 붙여넣기" 화면에 붙여넣을 수 있는 표 형식으로
+정리하는 역할이야. 아래 규칙을 반드시 지켜줘.
+
+1. 단어마다 아래 다섯 개 항목을 순서대로 만들어줘:
+   단어(간체) / 병음(성조 포함) / 품사(한국어로 짧게: 명사/동사/형용사/부사 등) /
+   뜻(한국어) / 예문(그 단어가 들어간 중국어 문장. 지문에 있으면 원문 그대로,
+   없으면 자연스러운 예문을 새로 만들어줘)
+
+2. 각 항목은 반드시 탭(Tab) 문자로 구분해서 한 단어당 한 줄로 출력해줘.
+   줄 안에 탭이 아닌 다른 구분자(쉼표, 세미콜론 등)는 쓰지 마.
+
+3. 첫 줄에는 제목 줄을 "단어	병음	품사	뜻	예문"처럼 탭으로 구분해서
+   넣어줘 (화면에서 자동으로 인식해서 제외하니 넣어도 상관없어).
+
+4. 이미 나온 단어(중복)는 한 번만 넣어줘.
+
+5. 예문을 새로 만들 수 없을 만큼 정보가 부족하면 그 칸은 비워둬도 돼
+   (단어와 뜻만은 반드시 채워야 해).`;
+
+  function showVocabPasteGuide() {
+    const overlay = document.createElement('div');
+    overlay.className = 'vpi-overlay';
+    overlay.innerHTML = `
+      <div class="vpi-panel">
+        <div class="vpi-header">
+          <p class="vpi-title">단어 붙여넣기 가이드</p>
+          <button class="vpi-close" id="vocab-guide-close" aria-label="닫기">&times;</button>
+        </div>
+        <div class="vpi-body">
+          <p class="vpi-hint-text" style="margin-bottom:16px;">
+            엑셀·구글 시트·한셀에서 <strong>단어·병음·품사·뜻·예문</strong> 순서로 된
+            표를 선택해 복사한 뒤, 붙여넣기 칸에 그대로 붙여넣으세요 (단어만 필수,
+            나머지 칸은 비워도 됩니다). 첫 줄이 "단어/병음/품사/뜻/예문" 같은 제목
+            줄이면 자동으로 인식해서 제외합니다. 붙여넣은 뒤 다음 화면에서 항목별로
+            체크·수정·삭제한 다음 등록하면 됩니다.
+          </p>
+          <p class="section-heading" style="font-size:13.5px;">AI에게 단어표 만들어달라고 요청하기</p>
+          <p class="vpi-hint-text" style="margin-bottom:10px;">
+            중국어 지문이나 단어 목록이 있다면, AI(Claude, ChatGPT 등)에게 아래
+            프롬프트와 함께 주면 이 화면에 바로 붙여넣을 수 있는 표를 만들어줍니다.
+          </p>
+          <div class="admin-field">
+            <textarea id="vocab-guide-prompt" rows="10" readonly>${App.escapeHTML(VOCAB_PASTE_AI_PROMPT)}</textarea>
+          </div>
+          <p class="vpi-hint-text" style="margin-top:8px;">
+            AI 답변을 그대로 복사해서 붙여넣기 칸에 붙여넣으면 됩니다 (AI가 탭으로
+            구분된 표를 만들어주면 바로 인식됩니다).
+          </p>
+          <div class="admin-form-actions" style="margin-top:16px;">
+            <button class="btn-primary" id="vocab-guide-copy">프롬프트 복사</button>
+            <button class="btn-secondary" id="vocab-guide-close-2">닫기</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const closeGuide = () => {
+      document.removeEventListener('keydown', onGuideKeyDown, true);
+      overlay.remove();
+    };
+    function onGuideKeyDown(e) {
+      if (e.key === 'Escape') {
+        e.stopPropagation(); // 부모 모달(단어 붙여넣기)까지 함께 닫히지 않도록
+        closeGuide();
+      }
+    }
+    document.addEventListener('keydown', onGuideKeyDown, true);
+
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeGuide(); });
+    overlay.querySelector('#vocab-guide-close').addEventListener('click', closeGuide);
+    overlay.querySelector('#vocab-guide-close-2').addEventListener('click', closeGuide);
+    overlay.querySelector('#vocab-guide-copy').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(VOCAB_PASTE_AI_PROMPT);
+        App.showToast('프롬프트를 복사했습니다');
+      } catch (e) {
+        const textarea = overlay.querySelector('#vocab-guide-prompt');
+        textarea.focus();
+        textarea.select();
+        App.showToast('자동 복사에 실패했습니다. 직접 선택해서 복사해주세요');
+      }
+    });
+  }
+
   /* ---------------- 1단계: 붙여넣기 화면 ---------------- */
 
   function renderPasteStep() {
@@ -66,7 +154,10 @@ const VocabPasteImport = (() => {
       <div class="vpi-panel" role="dialog" aria-modal="true" aria-label="단어 표 붙여넣기">
         <div class="vpi-header">
           <p class="vpi-title">${App.ICONS.plus} 단어 표 붙여넣기</p>
-          <button class="vpi-close" id="vpi-close" aria-label="닫기">×</button>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="icon-text-btn" id="vpi-guide-btn">가이드 보기</button>
+            <button class="vpi-close" id="vpi-close" aria-label="닫기">×</button>
+          </div>
         </div>
         <div class="vpi-body">
           <div class="vpi-format-hint">
@@ -131,6 +222,7 @@ const VocabPasteImport = (() => {
     textarea.addEventListener('paste', () => setTimeout(updatePasteStatus, 0));
     textarea.focus();
 
+    overlay.querySelector('#vpi-guide-btn').addEventListener('click', showVocabPasteGuide);
     overlay.querySelector('#vpi-close').addEventListener('click', close);
     overlay.querySelector('#vpi-cancel').addEventListener('click', close);
     nextBtn.addEventListener('click', () => {
