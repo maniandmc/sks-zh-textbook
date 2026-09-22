@@ -74,6 +74,7 @@
         <div class="sidebar-divider"></div>
         <div class="nav-group">
           <button class="nav-item" data-view="admin" onclick="App.navigate('admin')"></button>
+          <button class="nav-item" data-view="announcements" onclick="App.navigate('announcements')"></button>
         </div>
       </nav>
 
@@ -111,6 +112,7 @@
   <script src="js/vocab-paste-import.js"></script>
   <script src="js/admin.js"></script>
   <script src="js/classes.js"></script>
+  <script src="js/announcements-admin.js"></script>
 
   <script>
     // 아이콘 주입 (App.ICONS 로드 이후 실행되어야 하므로 DOMContentLoaded에서 처리)
@@ -131,6 +133,7 @@
         { view: 'bookmarks', icon: 'bookmark', label: '북마크' },
         { view: 'classes', icon: 'users', label: '클래스' },
         { view: 'admin', icon: 'settings', label: '교재 관리' },
+        { view: 'announcements', icon: 'megaphone', label: '공지사항 관리' },
       ];
       navItems.forEach((el, i) => {
         const cfg = navConfig[i];

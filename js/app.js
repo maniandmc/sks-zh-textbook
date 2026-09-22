@@ -414,6 +414,7 @@ const App = (() => {
     logout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>`,
     users: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
     lock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`,
+    megaphone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>`,
   };
 
   /* ---------------- Toast ---------------- */
@@ -459,6 +460,9 @@ const App = (() => {
     if (view === 'admin' && !state.currentUser) {
       view = 'home';
     }
+    if (view === 'announcements' && (!state.currentUser || state.currentUser.role !== 'teacher')) {
+      view = 'home';
+    }
     state.currentView = view;
     closeSidebar();
 
@@ -499,6 +503,11 @@ const App = (() => {
       state.currentLessonId = null;
       renderLessonSidebarActive(null);
       await Admin.render(main, opts.lessonId || null);
+      renderInfoPanel(null);
+    } else if (view === 'announcements') {
+      state.currentLessonId = null;
+      renderLessonSidebarActive(null);
+      await AnnouncementsAdmin.render(main);
       renderInfoPanel(null);
     }
 
@@ -756,6 +765,9 @@ const App = (() => {
       const labelEl = adminNavItem.querySelector('span');
       if (labelEl) labelEl.textContent = user.role === 'teacher' ? '교재 관리' : '내 교재';
     }
+
+    const announcementsNavItem = document.querySelector('.nav-item[data-view="announcements"]');
+    if (announcementsNavItem) announcementsNavItem.style.display = user.role === 'teacher' ? '' : 'none';
 
     if (user.role === 'student') {
       await ensureBookmarks();
