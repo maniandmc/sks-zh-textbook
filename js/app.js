@@ -509,7 +509,7 @@ const App = (() => {
           const pct = getLessonPercent(l.id);
           return `
             <button class="lesson-nav-item" data-lesson-id="${l.id}" onclick="App.navigate('reader', {lessonId: ${l.id}})">
-              <span class="ln-title zh">${l.title}</span>
+              <span class="ln-title zh">${l.chineseTitle}</span>
               <span class="ln-progress">${pct}%</span>
             </button>
           `;
@@ -559,7 +559,7 @@ const App = (() => {
       <div class="panel-section">
         <p class="panel-title">현재 단원</p>
         <div class="panel-lesson-card">
-          <p class="pl-title zh">${lesson.title}</p>
+          <p class="pl-title zh">${lesson.chineseTitle}</p>
           <p class="pl-sub">${lesson.koreanTitle}</p>
           <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
           <div class="progress-text-row"><span>학습 진행률</span><span>${pct}%</span></div>
@@ -588,7 +588,7 @@ const App = (() => {
 
     if (showCopyBtn) {
       panel.querySelector('#btn-copy-to-mine').addEventListener('click', async () => {
-        if (!confirm(`"${lesson.title}"을(를) 내 교재로 복사하시겠습니까?`)) return;
+        if (!confirm(`"${lesson.chineseTitle}"을(를) 내 교재로 복사하시겠습니까?`)) return;
         let result;
         try {
           result = await copyLessonToMine(lesson.id);

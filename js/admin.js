@@ -88,8 +88,8 @@ const Admin = (() => {
 
     listEl.innerHTML = editable.map(l => `
       <button class="admin-lesson-item ${l.id === selectedLessonId ? 'active' : ''}" data-lesson-id="${l.id}">
-        <span class="ali-title zh">${l.title}</span>
-        <span class="ali-sub zh">${l.chineseTitle}</span>
+        <span class="ali-title zh">${l.chineseTitle}</span>
+        <span class="ali-sub">${l.koreanTitle}</span>
       </button>
     `).join('');
 
@@ -127,7 +127,6 @@ const Admin = (() => {
       <div class="admin-card">
         <div class="admin-lesson-header-row">
           <div>
-            <p class="rh-label zh" style="margin-bottom:2px;">${lesson.title}</p>
             <p class="section-heading" style="margin:0;">${lesson.chineseTitle} <span style="color:var(--color-text-secondary);font-weight:400;">· ${lesson.koreanTitle}</span></p>
           </div>
           <div class="admin-lesson-header-actions">
@@ -160,11 +159,11 @@ const Admin = (() => {
 
     panel.querySelector('#admin-export-lesson').addEventListener('click', async () => {
       await App.exportLesson(lesson.id);
-      App.showToast(`${lesson.title} 데이터를 내보냈습니다`);
+      App.showToast(`${lesson.chineseTitle} 데이터를 내보냈습니다`);
     });
 
     panel.querySelector('#admin-delete-lesson').addEventListener('click', async () => {
-      if (!confirm(`${lesson.title} (${lesson.chineseTitle}) 단원을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
+      if (!confirm(`${lesson.chineseTitle} (${lesson.koreanTitle}) 단원을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
       try {
         await App.deleteLesson(lesson.id);
       } catch (e) { return; }

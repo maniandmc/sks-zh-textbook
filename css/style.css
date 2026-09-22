@@ -631,7 +631,6 @@ input {
   margin: 0 0 4px;
 }
 .lesson-card .lc-title {
-  font-family: var(--font-zh);
   font-size: 14px;
   color: var(--color-text-secondary);
   margin: 0 0 12px;

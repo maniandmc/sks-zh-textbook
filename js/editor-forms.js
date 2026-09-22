@@ -17,25 +17,6 @@ const EditorForms = (() => {
     }
   }
 
-  // 단원 번호(第一课, 第十二课 ...)는 사용자가 직접 입력하지 않고, 같은 소유자(클래스/개인)
-  // 안에 이미 있는 단원 수를 세어 자동으로 매긴다.
-  const CHINESE_DIGITS = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
-  function toChineseNumeral(n) {
-    if (n <= 10) return n === 10 ? '十' : CHINESE_DIGITS[n];
-    if (n < 20) return '十' + CHINESE_DIGITS[n % 10];
-    if (n < 100) {
-      const tens = Math.floor(n / 10);
-      const ones = n % 10;
-      return CHINESE_DIGITS[tens] + '十' + (ones ? CHINESE_DIGITS[ones] : '');
-    }
-    return String(n);
-  }
-  function nextLessonLabel(meta, ownerType, ownerId) {
-    const group = meta.groups.find(g => g.ownerType === ownerType && g.ownerId === ownerId);
-    const count = group ? group.lessons.length : 0;
-    return `第${toChineseNumeral(count + 1)}课`;
-  }
-
   /* ---------------- 문장 폼 ---------------- */
 
   function renderSentenceForm(hostEl, lessonId, sentence, onDone) {
@@ -508,10 +489,12 @@ const EditorForms = (() => {
         return;
       }
 
+      // title 컬럼은 DB상 필수값이라 남겨두지만, 화면에는 더 이상 별도로 표시하지 않고
+      // 중국어 제목과 같은 값을 넣어둔다.
       let newId = null;
       try {
         if (lesson) {
-          await App.updateLessonMeta(lesson.id, { title: lesson.title, chineseTitle, koreanTitle });
+          await App.updateLessonMeta(lesson.id, { title: chineseTitle, chineseTitle, koreanTitle });
           App.showToast('단원 정보를 수정했습니다');
         } else if (showClassSelect) {
           const select = hostEl.querySelector('#ef-l-class');
@@ -520,14 +503,10 @@ const EditorForms = (() => {
             return;
           }
           const ownerId = Number(select.value);
-          const meta = await App.getLessonsMeta();
-          const title = nextLessonLabel(meta, 'class', ownerId);
-          newId = await App.addLesson({ title, chineseTitle, koreanTitle, ownerType: 'class', ownerId });
+          newId = await App.addLesson({ title: chineseTitle, chineseTitle, koreanTitle, ownerType: 'class', ownerId });
           App.showToast('새 단원을 추가했습니다');
         } else {
-          const meta = await App.getLessonsMeta();
-          const title = nextLessonLabel(meta, 'student', user.id);
-          newId = await App.addLesson({ title, chineseTitle, koreanTitle, ownerType: 'student', ownerId: user.id });
+          newId = await App.addLesson({ title: chineseTitle, chineseTitle, koreanTitle, ownerType: 'student', ownerId: user.id });
           App.showToast('새 단원을 추가했습니다');
         }
       } catch (e) {

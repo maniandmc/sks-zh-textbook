@@ -38,8 +38,8 @@ const Views = (() => {
       const p = App.getLessonPercent(l.id);
       return `
         <button class="lesson-card" onclick="App.navigate('reader', {lessonId:${l.id}})">
-          <p class="lc-num zh">${l.title}</p>
-          <p class="lc-title zh">${l.chineseTitle}</p>
+          <p class="lc-num zh">${l.chineseTitle}</p>
+          <p class="lc-title">${l.koreanTitle}</p>
           <div class="lc-progress-row">
             <div class="progress-bar-track" style="flex:1"><div class="progress-bar-fill" style="width:${p}%"></div></div>
             <span class="lc-percent">${p}%</span>
@@ -56,7 +56,7 @@ const Views = (() => {
         </div>
 
         <div class="continue-card">
-          <p class="cc-label zh">현재 학습 · ${lastLesson.title}</p>
+          <p class="cc-label">현재 학습</p>
           <p class="cc-title zh">${lastLesson.chineseTitle}</p>
           <p class="cc-sub">${lastLesson.koreanTitle}</p>
           <div class="cc-progress-row">

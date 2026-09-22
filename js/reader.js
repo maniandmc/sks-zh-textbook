@@ -25,7 +25,6 @@ const Reader = (() => {
         <div class="reader-header">
           <div class="reader-header-top">
             <div>
-              <p class="rh-label zh">${currentLesson.title}</p>
               <h2 class="zh">${currentLesson.chineseTitle}</h2>
               <p class="rh-korean">${currentLesson.koreanTitle}</p>
             </div>

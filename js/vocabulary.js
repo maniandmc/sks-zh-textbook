@@ -181,7 +181,7 @@ const Vocabulary = (() => {
     lessons.forEach((lesson, idx) => {
       if (!lesson) return;
       lesson.vocabulary.forEach(v => {
-        allWords.push({ ...v, lessonId: lesson.id, lessonTitle: meta.lessons[idx].title });
+        allWords.push({ ...v, lessonId: lesson.id, lessonTitle: meta.lessons[idx].chineseTitle });
       });
     });
 
