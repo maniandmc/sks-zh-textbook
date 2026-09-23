@@ -163,6 +163,14 @@ const Classes = (() => {
       btn.addEventListener('click', () => toggleRoster(btn, Number(btn.dataset.classId)));
     });
 
+    container.querySelectorAll('[data-action="rename-class"]').forEach(btn => {
+      btn.addEventListener('click', () => toggleRenameClassForm(Number(btn.dataset.classId), btn.dataset.className, container));
+    });
+
+    container.querySelectorAll('[data-action="delete-class"]').forEach(btn => {
+      btn.addEventListener('click', () => deleteClass(Number(btn.dataset.classId), btn.dataset.className, container));
+    });
+
     container.querySelectorAll('[data-action="reset-password"]').forEach(btn => {
       const studentId = Number(btn.dataset.studentId);
       const student = students.find(s => s.id === studentId);
@@ -175,14 +183,17 @@ const Classes = (() => {
       <div class="admin-card class-card">
         <div class="admin-lesson-header-row">
           <div>
-            <p class="section-heading" style="margin:0 0 4px;">${App.escapeHTML(c.name)}</p>
+            <p class="section-heading" style="margin:0 0 4px;" id="class-name-${c.id}">${App.escapeHTML(c.name)}</p>
             <p class="admin-row-sub">학생 ${c.student_count}명</p>
           </div>
           <div class="admin-lesson-header-actions">
             <span class="join-code-badge" title="참여 코드">${c.join_code}</span>
             <button class="icon-text-btn" data-action="toggle-roster" data-class-id="${c.id}">명단 보기</button>
+            <button class="icon-text-btn" data-action="rename-class" data-class-id="${c.id}" data-class-name="${App.escapeHTML(c.name)}">이름 변경</button>
+            <button class="icon-text-btn danger" data-action="delete-class" data-class-id="${c.id}" data-class-name="${App.escapeHTML(c.name)}">클래스 삭제</button>
           </div>
         </div>
+        <div class="admin-inline-form" id="rename-form-${c.id}"></div>
         <div class="class-roster" id="roster-${c.id}"></div>
       </div>
     `;
@@ -236,6 +247,74 @@ const Classes = (() => {
       App.showToast(e.message);
       return;
     }
+    await renderTeacherView(container);
+  }
+
+  function toggleRenameClassForm(classId, currentName, container) {
+    const formEl = document.getElementById(`rename-form-${classId}`);
+    if (!formEl) return;
+
+    if (formEl.classList.contains('show')) {
+      formEl.classList.remove('show');
+      formEl.innerHTML = '';
+      return;
+    }
+
+    formEl.classList.add('show');
+    formEl.innerHTML = `
+      <div class="inline-form-row">
+        <input type="text" id="rename-input-${classId}" value="${App.escapeHTML(currentName)}">
+        <button class="btn-primary" id="rename-save-${classId}">저장</button>
+        <button class="btn-secondary" id="rename-cancel-${classId}">취소</button>
+      </div>
+    `;
+
+    const input = formEl.querySelector(`#rename-input-${classId}`);
+    input.focus();
+    input.select();
+
+    const close = () => {
+      formEl.classList.remove('show');
+      formEl.innerHTML = '';
+    };
+
+    formEl.querySelector(`#rename-cancel-${classId}`).addEventListener('click', close);
+
+    const submit = async () => {
+      const name = input.value.trim();
+      if (!name) {
+        App.showToast('클래스 이름을 입력해주세요');
+        return;
+      }
+      try {
+        await Api.classes.rename(classId, name);
+        App.showToast('클래스 이름을 변경했습니다');
+      } catch (e) {
+        App.showToast(e.message);
+        return;
+      }
+      App.invalidateCache();
+      App.renderSidebarLessonList();
+      close();
+      await renderTeacherView(container);
+    };
+
+    formEl.querySelector(`#rename-save-${classId}`).addEventListener('click', submit);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+  }
+
+  async function deleteClass(classId, className, container) {
+    if (!confirm(`"${className}" 클래스를 삭제하시겠습니까?\n클래스의 모든 단원과 학생 명단이 함께 삭제되며, 되돌릴 수 없습니다.`)) return;
+
+    try {
+      await Api.classes.remove(classId);
+      App.showToast(`"${className}" 클래스를 삭제했습니다`);
+    } catch (e) {
+      App.showToast(e.message);
+      return;
+    }
+    App.invalidateCache();
+    App.renderSidebarLessonList();
     await renderTeacherView(container);
   }
 

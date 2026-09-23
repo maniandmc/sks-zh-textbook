@@ -68,6 +68,8 @@ const Api = (() => {
     classes: {
       list: () => get('/api/classes'),
       create: (name) => post('/api/classes', { name }),
+      rename: (classId, name) => put(`/api/classes/${classId}`, { name }),
+      remove: (classId) => del(`/api/classes/${classId}`),
       join: (joinCode) => post('/api/classes/join', { joinCode }),
       students: (classId) => get(`/api/classes/${classId}/students`),
       removeStudent: (classId, studentId) => del(`/api/classes/${classId}/students/${studentId}`),

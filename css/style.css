@@ -681,13 +681,6 @@ input {
   justify-content: space-between;
   gap: 12px;
 }
-.reader-header .rh-label {
-  font-family: var(--font-zh);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-accent);
-  margin: 0 0 4px;
-}
 .reader-header h2 {
   font-family: var(--font-zh);
   font-size: 26px;
